@@ -45,7 +45,13 @@
 
 body {
   font-family: var(--font-sans);
-  background: var(--cream);
+  /* Imagem de fundo aplicada abaixo */
+  background: linear-gradient(rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.2)), 
+              url('https://raw.githubusercontent.com/sdwplayer01/sistemasalao_v2/refs/heads/main/ChatGPT%20Image%2030%20de%20mar.%20de%202026%2C%2000_07_01.png');
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+  background-repeat: no-repeat;
   color: var(--txt-dark);
   display: flex;
   min-height: 100vh;
