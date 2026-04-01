@@ -113,6 +113,21 @@ export function renderConfiguracoes(container) {
       </div>
     </div>
 
+    <!-- Aparência / Tema -->
+    <div class="card mb-16">
+      <div class="card-header"><span class="card-title">Aparência</span></div>
+      <div class="card-body" style="display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap">
+        <div>
+          <div style="font-weight:500;color:var(--txt-dark);margin-bottom:2px">Tema da interface</div>
+          <div style="font-size:12px;color:var(--txt-muted)">Alterna entre o modo claro e escuro. A preferência é salva automaticamente.</div>
+        </div>
+        <button class="btn-theme-toggle" id="btnToggleTema">
+          <i data-lucide="sun" style="width:14px;height:14px" id="temaIcon"></i>
+          <span id="temaLabel">Modo Claro</span>
+        </button>
+      </div>
+    </div>
+
     <div class="flex-between">
       <span class="text-muted" style="font-size:12px">Configurações salvas no seu navegador.</span>
       <button class="btn btn-primary" id="btnSalvarCfg">Salvar todas as configurações</button>
@@ -123,6 +138,7 @@ export function renderConfiguracoes(container) {
   document.getElementById('btnAddCat').onclick  = () => addItem('catLista',  'cat',  'Ex: Cabelo');
   document.getElementById('btnAddPgto').onclick = () => addItem('pgtoLista', 'pgto', 'Ex: Boleto');
   document.getElementById('btnSalvarCfg').onclick = salvarConfig;
+  initToggleTema();
 }
 
 function itemRow(val, i, tipo) {
@@ -169,4 +185,29 @@ function salvarConfig() {
   const el = document.getElementById('sidebarNomeSalao');
   if (el) el.textContent = cfg.nomeSalao;
   toast('Configurações salvas! ✓', 'success');
+}
+
+// ── Toggle de tema (Aparência) ─────────────────────────
+function initToggleTema() {
+  const btn   = document.getElementById('btnToggleTema');
+  const label = document.getElementById('temaLabel');
+  const icon  = document.getElementById('temaIcon');
+
+  function syncBtn() {
+    const atual = window.__getTheme?.() || 'light';
+    if (label) label.textContent = atual === 'dark' ? 'Modo Escuro' : 'Modo Claro';
+    if (icon)  icon.setAttribute('data-lucide', atual === 'dark' ? 'moon' : 'sun');
+    if (window.lucide) window.lucide.createIcons();
+  }
+
+  syncBtn();
+
+  if (btn) {
+    btn.onclick = () => {
+      const atual = window.__getTheme?.() || 'light';
+      const novo  = atual === 'dark' ? 'light' : 'dark';
+      window.__applyTheme?.(novo);
+      syncBtn();
+    };
+  }
 }

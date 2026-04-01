@@ -1,6 +1,6 @@
 // ═══════════════════════════════════════════════════════
-// app.js — Roteador principal + controle de autenticação
-// v2.3: Sidebar retrátil + boot resiliente com timeout
+// app.js — Roteador + autenticação + boot instantâneo
+// v3.0: Offline-first / tema claro-escuro / sync silencioso
 // ═══════════════════════════════════════════════════════
 import { renderDashboard }     from './pages/dashboard.js'
 import { renderAgenda }        from './pages/agenda.js'
@@ -12,10 +12,13 @@ import { renderControle }      from './pages/controle.js'
 import { renderConfiguracoes } from './pages/configuracoes.js'
 import { renderClientes }      from './pages/clientes.js'
 import { renderLogin }         from './pages/login.js'
-import { Config, loadFromSupabase, clearLocalData, exportarDados, importarDados } from './storage.js'
+import { Config, loadFromSupabase, clearLocalData } from './storage.js'
 import { supabase, getSession, logout } from './supabase.js'
-import { closeModal, toast, initIcons } from './utils.js'
+import { closeModal, openModal, toast, initIcons } from './utils.js'
 import { MESES } from './storage.js'
+
+// Expõe utils para o dashboard (onboarding modal)
+window.__utils = { openModal, closeModal }
 
 const PAGES = {
   dashboard:    { render: renderDashboard,    title: 'Dashboard' },
@@ -31,70 +34,62 @@ const PAGES = {
 
 let _paginaAtual = 'dashboard'
 
+// ── Tema ───────────────────────────────────────────────
+function applyTheme(theme) {
+  document.documentElement.setAttribute('data-theme', theme)
+  localStorage.setItem('salao_theme', theme)
+}
+
+function loadTheme() {
+  // Aplica imediatamente na abertura — antes do DOMContentLoaded
+  const saved = localStorage.getItem('salao_theme') || 'light'
+  applyTheme(saved)
+  return saved
+}
+
+// Roda antes do DOMContentLoaded para evitar flash de tema errado
+loadTheme()
+
 // ── Navegação ──────────────────────────────────────────
-function navigateTo(page) {
+export function navigateTo(page) {
   if (!PAGES[page]) return
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'))
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'))
+
   const pageEl = document.getElementById(`page-${page}`)
   const navEl  = document.querySelector(`[data-page="${page}"]`)
+
   if (pageEl) {
     pageEl.classList.add('active')
-    pageEl.innerHTML = '<div style="text-align:center;padding:60px;color:var(--txt-muted)">Carregando...</div>'
+    // Placeholder leve em vez de texto
+    pageEl.innerHTML = `<div style="display:flex;align-items:center;justify-content:center;padding:60px;gap:10px;color:var(--txt-muted)">
+      <i data-lucide="loader-2" style="width:18px;height:18px;animation:spin .8s linear infinite"></i>
+      Carregando...
+    </div>`
     PAGES[page].render(pageEl)
-    // Garante que ícones Lucide injetados dinamicamente sejam renderizados
     initIcons()
   }
+
   if (navEl) navEl.classList.add('active')
+
   const titleEl = document.getElementById('topBarTitle')
   if (titleEl) titleEl.textContent = PAGES[page].title
+
   _paginaAtual = page
-  // Mobile: fecha sidebar ao navegar (NÃO remove collapsed)
+
+  // Mobile: fecha sidebar
   if (window.innerWidth <= 768) document.getElementById('sidebar').classList.remove('open')
 }
 
-// ── Mostrar / ocultar áreas ────────────────────────────
-function showApp() {
-  document.getElementById('page-login').style.display = 'none'
-  document.getElementById('app-shell').style.display  = ''
-}
+// ── show/hide ──────────────────────────────────────────
+function showApp()   { document.getElementById('page-login').style.display = 'none';  document.getElementById('app-shell').style.display = '' }
+function showLogin() { document.getElementById('app-shell').style.display  = 'none'; document.getElementById('page-login').style.display = '' }
 
-function showLogin() {
-  document.getElementById('app-shell').style.display  = 'none'
-  document.getElementById('page-login').style.display = ''
-}
-
-// ── Init do app (pós-login) ────────────────────────────
-async function initApp(user) {
+// ── Init do app (pós-login) — INSTANT BOOT ────────────
+function initApp(user) {
   showApp()
 
-  // Mostra "carregando dados..."
-  document.getElementById('topBarTitle').textContent = 'Carregando dados...'
-
-  // ═══ v2.3: Boot resiliente com timeout de 7s ═══════
-  // Se o Supabase não responder em 7s, prossegue com dados locais (offline mode).
-  // Usa AbortController para cancelar o fetch pendente quando possível.
-  try {
-    const controller = new AbortController()
-    const timeoutId  = setTimeout(() => controller.abort(), 7000)
-
-    await Promise.race([
-      loadFromSupabase(),
-      new Promise((_, reject) => {
-        controller.signal.addEventListener('abort', () =>
-          reject(new Error('Sync timeout — 7s'))
-        )
-      })
-    ])
-
-    clearTimeout(timeoutId)
-  } catch (e) {
-    console.warn('⚠ Falha no sync, usando modo offline:', e.message || e)
-    toast('Sem conexão — usando dados locais', 'default', 4000)
-  }
-  // ═══ /boot resiliente ══════════════════════════════
-
-  // Salva nome do salão vindo do cadastro (primeira vez via Google ou e-mail)
+  // 1. Aplica nome do salão do cache imediatamente
   const pendingName = localStorage.getItem('salao_pending_name')
   if (pendingName) {
     Config.save({ nomeSalao: pendingName })
@@ -103,30 +98,32 @@ async function initApp(user) {
 
   const cfg = Config.get()
 
-  // Nome do salão na sidebar
   const nomeSalaoEl = document.getElementById('sidebarNomeSalao')
   if (nomeSalaoEl) nomeSalaoEl.textContent = cfg.nomeSalao || 'Meu Salão'
 
-  // E-mail do usuário logado
   const userEmailEl = document.getElementById('userEmail')
   if (userEmailEl) userEmailEl.textContent = user.email || ''
 
-  // Badge de mês
   const badgeEl = document.getElementById('badgeMes')
   if (badgeEl) {
     const now = new Date()
     badgeEl.textContent = `${MESES[now.getMonth()]} ${now.getFullYear()}`
   }
 
-  // Navegação
+  // 2. Render imediato do Dashboard com dados do localStorage
+  navigateTo('dashboard')
+
+  // 3. Sync com Supabase em background — NÃO bloqueia a tela
+  _syncBackground()
+
+  // ── Navegação ──────────────────────────────────────
   document.querySelectorAll('.nav-item').forEach(btn => {
     btn.onclick = () => navigateTo(btn.dataset.page)
   })
 
-  // ═══ v2.3: Menu — dual behavior (desktop: collapse, mobile: toggle) ═══
+  // ── Sidebar: collapse (desktop) e open (mobile) ────
   const sidebar = document.getElementById('sidebar')
 
-  // Restaura estado salvo
   if (localStorage.getItem('sidebarCollapsed') === 'true') {
     sidebar.classList.add('collapsed')
   }
@@ -141,9 +138,7 @@ async function initApp(user) {
 
   const btnMenuMobile = document.getElementById('btnMenuMobile')
   if (btnMenuMobile) {
-    btnMenuMobile.onclick = () => {
-      sidebar.classList.toggle('open')
-    }
+    btnMenuMobile.onclick = () => sidebar.classList.toggle('open')
   }
 
   // Fecha sidebar mobile ao clicar fora
@@ -155,55 +150,66 @@ async function initApp(user) {
     }
   })
 
-  // Modal
+  // ── Modal ──────────────────────────────────────────
   document.getElementById('modalClose').onclick = closeModal
   document.getElementById('modalOverlay').onclick = e => {
     if (e.target === document.getElementById('modalOverlay')) closeModal()
   }
 
-  // Export / Import
-  document.getElementById('btnExport').onclick = () => { exportarDados(); toast('Dados exportados! ✓', 'success') }
-  document.getElementById('btnImport').onclick = () => document.getElementById('fileImport').click()
-  document.getElementById('fileImport').onchange = async e => {
-    const file = e.target.files[0]
-    if (!file) return
-    try {
-      const text = await file.text()
-      importarDados(text)
-      toast('Dados importados com sucesso! ✓', 'success')
-      navigateTo(_paginaAtual)
-    } catch { toast('Erro ao importar: arquivo inválido.', 'error') }
-    e.target.value = ''
-  }
 
-  // Logout
+
+  // ── Logout ─────────────────────────────────────────
   document.getElementById('btnLogout').onclick = async () => {
     if (!confirm('Sair do sistema?')) return
     await logout()
     clearLocalData()
     showLogin()
     renderLogin(onLoginSuccess)
-    toast('Até logo! 👋', 'default')
+    toast('Ate logo!', 'default')
   }
 
-  // Renderiza ícones Lucide na sidebar
   initIcons()
-
-  // Página inicial
-  navigateTo('dashboard')
 }
 
-// ── Callback pós-login bem-sucedido ───────────────────
-async function onLoginSuccess(user) {
-  await initApp(user)
+// ── Sync background (não bloqueia UI) ─────────────────
+async function _syncBackground() {
+  try {
+    await loadFromSupabase()
+    // Após sync silencioso, recarrega a página atual apenas se for o dashboard
+    // (dados operacionais do dia podem ter mudado em outro dispositivo)
+    if (_paginaAtual === 'dashboard') {
+      const pageEl = document.getElementById('page-dashboard')
+      if (pageEl) {
+        renderDashboard(pageEl)
+        initIcons()
+      }
+    }
+  } catch (e) {
+    // Falha silenciosa — usuário já está usando com dados locais
+    console.warn('Sync background falhou:', e?.message || e)
+  }
+}
+
+// ── Callback pós-login ─────────────────────────────────
+function onLoginSuccess(user) {
+  initApp(user) // NÃO usa await — boot instantâneo
 }
 
 // ── Entry point ────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', async () => {
-  // Escuta mudanças de sessão (OAuth callback, link mágico, etc.)
+
+  // Adiciona classe de animação de spin para ícone de carregamento
+  if (!document.getElementById('spinStyle')) {
+    const style = document.createElement('style')
+    style.id = 'spinStyle'
+    style.textContent = '@keyframes spin { to { transform: rotate(360deg); } }'
+    document.head.appendChild(style)
+  }
+
+  // Escuta mudanças de sessão
   supabase.auth.onAuthStateChange(async (event, session) => {
     if (event === 'SIGNED_IN' && session?.user) {
-      await initApp(session.user)
+      initApp(session.user)
     }
     if (event === 'SIGNED_OUT') {
       clearLocalData()
@@ -222,9 +228,14 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Verifica sessão existente
   const session = await getSession()
   if (session?.user) {
-    await initApp(session.user)
+    initApp(session.user)
   } else {
     showLogin()
     renderLogin(onLoginSuccess)
   }
 })
+
+// ── API pública para páginas que precisam navegar ─────
+window.__navigateTo = navigateTo
+window.__applyTheme = applyTheme
+window.__getTheme   = () => localStorage.getItem('salao_theme') || 'light'

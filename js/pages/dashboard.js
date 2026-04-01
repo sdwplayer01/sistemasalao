@@ -1,313 +1,339 @@
 // ═══════════════════════════════════════════════════════
-// pages/dashboard.js — Dashboard 360° (v2.2)
-// Centro de Comando: KPIs financeiros + 3 Widgets
-//   A: Agenda do Dia  B: Alertas de Estoque  C: Caixa do Dia
+// pages/dashboard.js — Dashboard Operacional v3.0
+// - KPIs pesados removidos do topo → ficam em Diário/Caixa
+// - Painel focado em: lembretes rotativos, agenda,
+//   caixa do dia, estoque, retenção
+// - Renderização instantânea (sem await bloqueante)
+// - Onboarding modal no primeiro acesso
 // ═══════════════════════════════════════════════════════
 import { Config, Diario, Servicos, Custos, Receitas, Agenda, Produtos, MESES } from '../storage.js';
 import { R$, pct, num, mesKey, fmtData, linkWA, formatarTelefone } from '../utils.js';
 import { getRetencao30dias } from './clientes.js';
 
+// ── Mensagens rotativas (sem emoji, clean) ────────────
+const MSGS_ROTATIVAS = [
+  'Tem alguma conta fixa para pagar hoje?',
+  'Fazer pedido de estoque?',
+  'Cliente esperando orçamento?',
+  'Conferiu os agendamentos de amanhã?',
+  'Já lançou os atendimentos de hoje no Diário?',
+];
+
+let _msgInterval = null;
+
+function initMensagensRotativas(el) {
+  if (!el) return;
+  let idx = 0;
+  const span = el.querySelector('.rotating-msg-text');
+  if (!span) return;
+
+  // Limpa intervalo anterior se existir (troca de página)
+  clearInterval(_msgInterval);
+
+  _msgInterval = setInterval(() => {
+    span.classList.add('fade-out');
+    setTimeout(() => {
+      idx = (idx + 1) % MSGS_ROTATIVAS.length;
+      span.textContent = MSGS_ROTATIVAS[idx];
+      span.classList.remove('fade-out');
+    }, 420);
+  }, 5000);
+}
+
+// ── Onboarding modal (só no primeiro acesso) ──────────
+function checkOnboarding() {
+  if (localStorage.getItem('onboarding_complete')) return;
+
+  const { openModal, closeModal } = window.__utils || {};
+  if (!openModal) return;
+
+  const body = `
+    <div style="margin-bottom:16px;font-family:var(--font-serif);font-size:18px;color:var(--noir);font-weight:600">
+      Bem-vinda ao seu sistema de gestão!
+    </div>
+    <p style="font-size:13px;color:var(--txt-muted);margin-bottom:20px;line-height:1.6">
+      Em poucos minutos você já pode usar tudo. Siga esta ordem:
+    </p>
+    <div class="onboarding-step">
+      <div class="onboarding-num">1</div>
+      <div class="onboarding-txt"><strong>Configurações</strong> — nome do salão, valor da hora e profissionais</div>
+    </div>
+    <div class="onboarding-step">
+      <div class="onboarding-num">2</div>
+      <div class="onboarding-txt"><strong>Custos Fixos</strong> — aluguel, energia, internet e outros</div>
+    </div>
+    <div class="onboarding-step">
+      <div class="onboarding-num">3</div>
+      <div class="onboarding-txt"><strong>Receitas Internas</strong> — repasses e aluguel de cadeiras</div>
+    </div>
+    <div class="onboarding-step">
+      <div class="onboarding-num">4</div>
+      <div class="onboarding-txt"><strong>Serviços & Produtos</strong> — cadastre os serviços para ver os preços sugeridos</div>
+    </div>
+    <div class="onboarding-step">
+      <div class="onboarding-num">5</div>
+      <div class="onboarding-txt"><strong>Diário / Caixa</strong> — registre cada atendimento e o sistema atualiza tudo</div>
+    </div>
+  `;
+
+  const footer = `
+    <label style="display:flex;align-items:center;gap:8px;font-size:12px;color:var(--txt-muted);cursor:pointer;margin-right:auto">
+      <input type="checkbox" id="onbDontShow" /> Não mostrar novamente
+    </label>
+    <button class="btn btn-primary" id="onbClose">Entendido, vamos começar!</button>
+  `;
+
+  openModal('✦ Primeiros passos', body, footer);
+
+  document.getElementById('onbClose')?.addEventListener('click', () => {
+    if (document.getElementById('onbDontShow')?.checked) {
+      localStorage.setItem('onboarding_complete', 'true');
+    }
+    closeModal();
+  });
+}
+
+// ── Render principal ──────────────────────────────────
 export function renderDashboard(container) {
   const cfg      = Config.get();
   const ano      = cfg.ano;
   const mesAtual = new Date().getMonth();
+  const hoje     = new Date().toISOString().slice(0, 10);
 
-  // ── Totais anuais ────────────────────────────────────
-  let totalAtend = 0, totalCusto = 0, totalFat = 0, totalLucroReal = 0, totalComissao = 0;
-  const fatMeses = [];
+  // ── Dados OPERACIONAIS (rápidos — apenas hoje/este mês) ──
+  const agendaHoje  = Agenda.getHoje().slice(0, 6);
+  const agendaAmanha= Agenda.getAmanha().slice(0, 3);
+  const lancHoje    = Diario.getAll().filter(e => e.data === hoje);
+  const estoqBaixo  = Produtos.getLowStock();
+  const retencao    = getRetencao30dias().slice(0, 5);
+  const caixaHoje   = lancHoje.reduce((s, e) => s + (parseFloat(e.precoCobrado) || 0) * (parseInt(e.qtd) || 1), 0);
+  const caixaAtend  = lancHoje.reduce((s, e) => s + (parseInt(e.qtd) || 1), 0);
 
-  for (let m = 0; m < 12; m++) {
-    const res = Diario.resumoMes(ano, m);
-    totalAtend     += res.atendimentos;
-    totalCusto     += res.custoTotal;
-    totalFat       += res.faturamento;
-    totalLucroReal += res.lucroReal;   // v2.2: usa lucroReal (descontando comissões)
-    totalComissao  += res.comissaoTotal;
-    fatMeses.push({ mes: MESES[m].slice(0,3), fat: res.faturamento, lucro: res.lucroReal, atend: res.atendimentos });
-  }
+  // ── Resumo do mês atual (leve — só este mês) ─────────────
+  const resMes      = Diario.resumoMes(ano, mesAtual);
+  const cfPorCliente= Servicos.custoFixoPorClienteCalc(cfg);
 
-  const margemAnual    = totalFat > 0 ? totalLucroReal / totalFat : 0;
-  const ticketMedio    = totalAtend > 0 ? totalFat / totalAtend : 0;
-  const custoFixoMedio = Custos.mediaMeses();
-  const custoFixoReal  = Receitas.mediaCustoFixoReal();
-  const cfPorCliente   = Servicos.custoFixoPorClienteCalc(cfg);
+  // ── Indicadores minimalistas do topo ─────────────────────
+  const cfReal      = Receitas.mediaCustoFixoReal();
 
-  // Serviço destaque
-  const svcs = Servicos.getAll();
-  let svcDestaque = null;
-  if (svcs.length) {
-    const com = svcs.map(s => ({ ...s, ...Servicos.calcPrecos(s, cfg, cfPorCliente) }));
-    svcDestaque = com.sort((a,b) => b.precoIdeal - a.precoIdeal)[0];
-  }
-
-  // Resumo mês atual
-  const resMes = Diario.resumoMes(ano, mesAtual);
-
-  // Mês de maior faturamento
-  const melhorMes = fatMeses.reduce((best, m, i) => m.fat > (fatMeses[best]?.fat||0) ? i : best, 0);
-
-  // ── Dados dos widgets ─────────────────────────────────
-  const hoje        = new Date().toISOString().slice(0,10);
-  const agendaHoje  = Agenda.getHoje().slice(0, 5);                    // widget A
-  const estoqBaixo  = Produtos.getLowStock();                          // widget B
-  const lancHoje    = Diario.getAll().filter(e => e.data === hoje);    // widget C
-  const retencao    = getRetencao30dias().slice(0, 5);                 // widget D
-  const caixaHoje   = lancHoje.reduce((s,e) => s+(parseFloat(e.precoCobrado)||0)*(parseInt(e.qtd)||1), 0);
-  const caixaAtend  = lancHoje.reduce((s,e) => s+(parseInt(e.qtd)||1), 0);
-
-  // ── Render ────────────────────────────────────────────
   container.innerHTML = `
-    <div class="section-title">Dashboard</div>
-    <div class="section-sub">Ano ${ano} · ${MESES[mesAtual]} em foco</div>
-
-    <!-- KPIs financeiros -->
-    <div class="kpi-grid">
-      <div class="kpi-card green">
-        <div class="kpi-label">Faturamento Acumulado</div>
-        <div class="kpi-value">${R$(totalFat)}</div>
-        <div class="kpi-sub">${R$(resMes.faturamento)} este mês</div>
-      </div>
-      <div class="kpi-card ${totalLucroReal >= 0 ? 'plum' : 'warn'}">
-        <div class="kpi-label">Lucro Real Acumulado</div>
-        <div class="kpi-value">${R$(totalLucroReal)}</div>
-        <div class="kpi-sub">Após comissões pagas</div>
-      </div>
-      <div class="kpi-card rose">
-        <div class="kpi-label">Margem de Lucro</div>
-        <div class="kpi-value">${pct(margemAnual)}</div>
-        <div class="kpi-sub">Média anual real</div>
-      </div>
-      <div class="kpi-card blue">
-        <div class="kpi-label">Ticket Médio</div>
-        <div class="kpi-value">${R$(ticketMedio)}</div>
-        <div class="kpi-sub">Por atendimento cobrado</div>
-      </div>
-      <div class="kpi-card plum">
-        <div class="kpi-label">Atendimentos no Ano</div>
-        <div class="kpi-value">${num(totalAtend)}</div>
-        <div class="kpi-sub">${num(resMes.atendimentos)} este mês</div>
-      </div>
-      <div class="kpi-card warn">
-        <div class="kpi-label">Custo Fixo Real / Mês</div>
-        <div class="kpi-value">${R$(custoFixoReal)}</div>
-        <div class="kpi-sub">Após receitas internas</div>
+    <div class="flex-between" style="margin-bottom:4px">
+      <div>
+        <div class="section-title">Dashboard</div>
+        <div class="section-sub">${MESES[mesAtual]} ${ano} — visão operacional</div>
       </div>
     </div>
 
-    <!-- ═══ WIDGETS 360° ═══ -->
+    <!-- Barra de lembretes rotativos -->
+    <div class="rotating-msg-bar" id="rotatingMsgBar">
+      <div class="rotating-msg-dot"></div>
+      <span class="rotating-msg-text">${MSGS_ROTATIVAS[0]}</span>
+    </div>
+
+    <!-- Mini-KPIs operacionais (carrossel mobile) -->
+    <div class="kpi-grid" style="margin-bottom:20px">
+      <div class="kpi-card green">
+        <div class="kpi-label">Caixa Hoje</div>
+        <div class="kpi-value">${R$(caixaHoje)}</div>
+        <div class="kpi-sub">${caixaAtend} atend. registrados</div>
+      </div>
+      <div class="kpi-card plum">
+        <div class="kpi-label">Agenda Hoje</div>
+        <div class="kpi-value">${agendaHoje.length}</div>
+        <div class="kpi-sub">agendamentos confirmados</div>
+      </div>
+      <div class="kpi-card ${estoqBaixo.length > 0 ? 'warn' : 'rose'}">
+        <div class="kpi-label">Estoque Baixo</div>
+        <div class="kpi-value">${estoqBaixo.length}</div>
+        <div class="kpi-sub">${estoqBaixo.length > 0 ? 'produto(s) em alerta' : 'tudo em ordem'}</div>
+      </div>
+      <div class="kpi-card rose">
+        <div class="kpi-label">Retenção</div>
+        <div class="kpi-value">${retencao.length}</div>
+        <div class="kpi-sub">cliente${retencao.length !== 1 ? 's' : ''} sem visita +30d</div>
+      </div>
+      <div class="kpi-card blue">
+        <div class="kpi-label">Atend. ${MESES[mesAtual].slice(0, 3)}</div>
+        <div class="kpi-value">${num(resMes.atendimentos)}</div>
+        <div class="kpi-sub">neste mês</div>
+      </div>
+      <div class="kpi-card plum">
+        <div class="kpi-label">CF Real / Mês</div>
+        <div class="kpi-value">${R$(cfReal)}</div>
+        <div class="kpi-sub">para precificação</div>
+      </div>
+    </div>
+
+    <!-- Widgets operacionais -->
     <div class="widget-grid">
 
-      <!-- Widget A: Agenda do Dia -->
+      <!-- Agenda do Dia -->
       <div class="widget-card">
-        <div class="widget-title">📅 Agenda de Hoje</div>
+        <div class="widget-title">
+          <i data-lucide="calendar-check" style="width:13px;height:13px"></i>
+          Agenda de Hoje
+        </div>
         ${agendaHoje.length
           ? agendaHoje.map(a => `
             <div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--border);font-size:13px">
-              <span class="badge badge-plum" style="min-width:48px;text-align:center">${a.horario || '—'}</span>
-              <span style="flex:1;font-weight:500">${a.cliente || '—'}</span>
-              <span class="badge ${a.status==='confirmado'?'badge-green':a.status==='realizado'?'badge-rose':'badge-plum'}" style="font-size:10px">${a.status||'agendado'}</span>
+              <span class="badge badge-plum" style="min-width:46px;text-align:center;font-weight:600">${a.horario || '—'}</span>
+              <span style="flex:1;font-weight:500;color:var(--txt-dark)">${a.cliente || '—'}</span>
+              <span class="badge ${a.status === 'confirmado' ? 'badge-green' : a.status === 'realizado' ? 'badge-rose' : 'badge-plum'}" style="font-size:10px">${a.status || 'agendado'}</span>
             </div>`).join('')
-          : `<div style="text-align:center;padding:16px 0;color:var(--txt-muted);font-size:13px">
-               <div style="font-size:24px;margin-bottom:6px">📅</div>
+          : `<div style="text-align:center;padding:20px 0;color:var(--txt-muted);font-size:13px">
                Nenhum agendamento hoje
              </div>`
         }
-        ${agendaHoje.length ? `<a href="#" id="linkVerAgenda" style="font-size:12px;color:var(--plum-light);display:block;margin-top:8px">Ver agenda completa →</a>` : ''}
+        <a href="#" id="linkVerAgenda" style="font-size:12px;color:var(--plum);display:block;margin-top:8px;text-decoration:none;font-weight:500">Ver agenda completa →</a>
       </div>
 
-      <!-- Widget B: Alertas -->
+      <!-- Caixa do Dia -->
       <div class="widget-card">
-        <div class="widget-title">⚠ Alertas</div>
-        ${estoqBaixo.length
-          ? `<div style="font-size:11px;color:var(--txt-muted);margin-bottom:8px">Produtos com estoque baixo:</div>
-             ${estoqBaixo.slice(0,5).map(p => `
-               <div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid var(--border);font-size:13px">
-                 <span class="badge badge-warn" style="font-family:monospace;font-size:10px">${p.sku}</span>
-                 <span style="flex:1">${p.nome}</span>
-                 <span style="color:var(--txt-red);font-weight:600">${p.estoque ?? 0} un.</span>
-               </div>`).join('')}
-             ${estoqBaixo.length > 5 ? `<p style="font-size:11px;color:var(--txt-muted);margin-top:6px">+${estoqBaixo.length - 5} outros. Ver em <a href="#" id="linkVerEstoque" style="color:var(--plum-light)">Produtos</a>.</p>` : ''}`
-          : `<div style="text-align:center;padding:16px 0;color:var(--txt-muted);font-size:13px">
-               <div style="font-size:24px;margin-bottom:6px">✅</div>
-               Nenhum alerta de estoque
-             </div>`
-        }
-      </div>
-
-      <!-- Widget C: Caixa do Dia -->
-      <div class="widget-card">
-        <div class="widget-title">💰 Caixa de Hoje</div>
+        <div class="widget-title">
+          <i data-lucide="banknote" style="width:13px;height:13px"></i>
+          Caixa de Hoje
+        </div>
         ${lancHoje.length
-          ? `<div style="text-align:center;padding:8px 0">
-               <div style="font-size:32px;font-weight:700;font-family:var(--font-serif);color:var(--txt-green)">${R$(caixaHoje)}</div>
-               <div style="font-size:12px;color:var(--txt-muted);margin-top:4px">${caixaAtend} lançamento${caixaAtend!==1?'s':''} · ${lancHoje.length} registro${lancHoje.length!==1?'s':''}</div>
+          ? `<div style="text-align:center;padding:10px 0">
+               <div style="font-size:30px;font-weight:700;font-family:var(--font-serif);color:var(--txt-green)">${R$(caixaHoje)}</div>
+               <div style="font-size:12px;color:var(--txt-muted);margin-top:4px">${caixaAtend} atendimento${caixaAtend !== 1 ? 's' : ''}</div>
              </div>
-             <div style="margin-top:12px">
+             <div style="margin-top:10px">
                ${(() => {
-                 const fatSvc  = lancHoje.filter(e => (e.tipo??'servico')==='servico').reduce((s,e)=>s+(parseFloat(e.precoCobrado)||0)*(parseInt(e.qtd)||1),0);
-                 const fatProd = lancHoje.filter(e => e.tipo==='produto').reduce((s,e)=>s+(parseFloat(e.precoCobrado)||0)*(parseInt(e.qtd)||1),0);
+                 const fatSvc  = lancHoje.filter(e => (e.tipo ?? 'servico') === 'servico').reduce((s,e) => s+(parseFloat(e.precoCobrado)||0)*(parseInt(e.qtd)||1), 0);
+                 const fatProd = lancHoje.filter(e => e.tipo === 'produto').reduce((s,e) => s+(parseFloat(e.precoCobrado)||0)*(parseInt(e.qtd)||1), 0);
                  const rows = [];
-                 if(fatSvc>0)  rows.push(`<div style="display:flex;justify-content:space-between;font-size:13px;padding:3px 0"><span class="text-muted">✂ Serviços</span><span class="fw-600">${R$(fatSvc)}</span></div>`);
-                 if(fatProd>0) rows.push(`<div style="display:flex;justify-content:space-between;font-size:13px;padding:3px 0"><span class="text-muted">📦 Produtos</span><span class="fw-600">${R$(fatProd)}</span></div>`);
+                 if (fatSvc  > 0) rows.push(`<div style="display:flex;justify-content:space-between;font-size:13px;padding:3px 0;color:var(--txt-dark)"><span class="text-muted">Servicos</span><span class="fw-600">${R$(fatSvc)}</span></div>`);
+                 if (fatProd > 0) rows.push(`<div style="display:flex;justify-content:space-between;font-size:13px;padding:3px 0;color:var(--txt-dark)"><span class="text-muted">Produtos</span><span class="fw-600">${R$(fatProd)}</span></div>`);
                  return rows.join('');
                })()}
              </div>`
-          : `<div style="text-align:center;padding:16px 0;color:var(--txt-muted);font-size:13px">
-               <div style="font-size:24px;margin-bottom:6px">💰</div>
+          : `<div style="text-align:center;padding:20px 0;color:var(--txt-muted);font-size:13px">
                Nenhum lançamento hoje
              </div>`
         }
+        <a href="#" id="linkVerDiario" style="font-size:12px;color:var(--plum);display:block;margin-top:8px;text-decoration:none;font-weight:500">Abrir Diário / Caixa →</a>
       </div>
 
-      <!-- Widget D: CRM Retenção -->
+      <!-- Alertas de Estoque -->
       <div class="widget-card">
-        <div class="widget-title">🔔 Retenção (>30 dias)</div>
+        <div class="widget-title">
+          <i data-lucide="package-open" style="width:13px;height:13px"></i>
+          Alertas de Estoque
+        </div>
+        ${estoqBaixo.length
+          ? `<div style="font-size:11px;color:var(--txt-muted);margin-bottom:8px">${estoqBaixo.length} produto${estoqBaixo.length !== 1 ? 's' : ''} abaixo do mínimo:</div>
+             ${estoqBaixo.slice(0, 5).map(p => `
+               <div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid var(--border);font-size:13px">
+                 <span class="badge badge-warn" style="font-family:monospace;font-size:10px">${p.sku}</span>
+                 <span style="flex:1;color:var(--txt-dark)">${p.nome}</span>
+                 <span style="color:var(--txt-red);font-weight:600">${p.estoque ?? 0}</span>
+               </div>`).join('')}
+             ${estoqBaixo.length > 5 ? `<p style="font-size:11px;color:var(--txt-muted);margin-top:6px">+${estoqBaixo.length - 5} outros.</p>` : ''}
+             <a href="#" id="linkVerEstoque" style="font-size:12px;color:var(--plum);display:block;margin-top:8px;text-decoration:none;font-weight:500">Ver produtos →</a>`
+          : `<div style="text-align:center;padding:20px 0;color:var(--txt-muted);font-size:13px">
+               Estoque em dia
+             </div>`
+        }
+      </div>
+
+      <!-- Retenção CRM -->
+      <div class="widget-card">
+        <div class="widget-title">
+          <i data-lucide="user-check" style="width:13px;height:13px"></i>
+          Retenção — mais de 30 dias
+        </div>
         ${retencao.length
           ? retencao.map(r => `
             <div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--border);font-size:13px">
-              <span class="badge badge-rose" style="min-width:38px;text-align:center">${r.dias}d</span>
-              <span style="flex:1;font-weight:500">${r.nome}</span>
-              ${r.tel && linkWA(r.tel) 
-                ? `<a href="${linkWA(r.tel)}" target="_blank" class="wa-link" title="${formatarTelefone(r.tel)}"><i data-lucide="message-circle" style="width:14px;height:14px"></i></a>` 
-                : `<span class="text-muted" style="font-size:11px">Sem tel</span>`}
+              <span class="badge badge-rose" style="min-width:36px;text-align:center;font-weight:600">${r.dias}d</span>
+              <span style="flex:1;font-weight:500;color:var(--txt-dark)">${r.nome}</span>
+              ${r.tel && linkWA(r.tel)
+                ? `<a href="${linkWA(r.tel)}" target="_blank" class="wa-link" title="${formatarTelefone(r.tel)}"><i data-lucide="message-circle" style="width:14px;height:14px"></i></a>`
+                : `<span class="text-muted" style="font-size:11px">sem tel</span>`}
             </div>`).join('')
-          : `<div style="text-align:center;padding:16px 0;color:var(--txt-muted);font-size:13px">
-               <div style="font-size:24px;margin-bottom:6px">🎉</div>
-               Retenção em dia!
+          : `<div style="text-align:center;padding:20px 0;color:var(--txt-muted);font-size:13px">
+               Retencao em dia!
              </div>`
         }
-        ${retencao.length ? `<a href="#" id="linkVerCRM" style="font-size:12px;color:var(--plum-light);display:block;margin-top:8px">Ver todos no CRM →</a>` : ''}
-      </div>
-
-      <!-- Widget E: Lembretes de Operação -->
-      <div class="widget-card" style="grid-column: 1 / -1; display:flex; flex-direction:column; justify-content:center; align-items:center;  background:rgba(201, 169, 110, .08); border-color:rgba(201, 169, 110, .2) ">
-        <div class="widget-title" style="color:#D4B37F; margin-bottom:12px; font-size:12px"><i data-lucide="bell-ring" style="width:14px;height:14px;margin-right:6px"></i>Lembretes de Operação</div>
-        <div style="font-size:13px; color:var(--txt-white);text-align:center;max-width:400px;line-height:1.6">
-          <ul style="list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:8px">
-            <li style="padding:8px;border-radius:6px;background:rgba(255,255,255,.03)">💡 Tem alguma <strong>conta fixa</strong> para pagar hoje? Confira em Custos.</li>
-            <li style="padding:8px;border-radius:6px;background:${estoqBaixo.length > 0 ? 'rgba(255, 193, 7, .12)' : 'rgba(255,255,255,.03)'};color:${estoqBaixo.length > 0 ? '#F0D58A' : 'inherit'}">📦 Preciso fazer algum pedido de <strong>estoque</strong>? ${estoqBaixo.length > 0 ? '<strong>⚠ Sim, produtos esgotando!</strong>' : ''}</li>
-            <li style="padding:8px;border-radius:6px;background:rgba(255,255,255,.03)">💬 Tem alguma cliente esperando <strong>produto ou orçamento</strong> no WhatsApp?</li>
-          </ul>
-        </div>
+        ${retencao.length ? `<a href="#" id="linkVerCRM" style="font-size:12px;color:var(--plum);display:block;margin-top:8px;text-decoration:none;font-weight:500">Ver todos no CRM →</a>` : ''}
       </div>
 
     </div><!-- /widget-grid -->
 
-    <!-- Gráfico Faturamento vs Lucro -->
-    <div class="card mb-16">
-      <div class="card-header">
-        <span class="card-title">Faturamento e Lucro Real por Mês — ${ano}</span>
-        <span class="badge badge-plum">${totalFat ? 'Com dados' : 'Aguardando lançamentos'}</span>
-      </div>
-      <div class="card-body">
-        ${totalFat > 0
-          ? `<div class="chart-placeholder" id="chartFat"></div>`
-          : `<div style="text-align:center;padding:32px;color:var(--txt-muted)">
-               <div style="font-size:32px;margin-bottom:8px">📊</div>
-               <p>O gráfico aparece conforme você registra atendimentos no Diário.</p>
-             </div>`
-        }
-      </div>
-    </div>
-
-    <!-- Destaques -->
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+    <!-- Resumo do mês (compacto) -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
       <div class="card">
-        <div class="card-header"><span class="card-title">✦ Serviço em Destaque</span></div>
-        <div class="card-body">
-          ${svcDestaque ? `
-            <div class="fw-600 font-serif" style="font-size:18px;color:var(--txt-white)">${svcDestaque.nome}</div>
-            <div class="text-muted mt-4">${svcDestaque.categoria || '—'}</div>
-            <div class="preco-grid mt-16">
-              <div class="preco-box preco-min"><div class="preco-label">Mínimo</div><div class="preco-val">${R$(svcDestaque.precoMin)}</div></div>
-              <div class="preco-box preco-ideal"><div class="preco-label">Ideal</div><div class="preco-val">${R$(svcDestaque.precoIdeal)}</div></div>
-              <div class="preco-box preco-prem"><div class="preco-label">Premium</div><div class="preco-val">${R$(svcDestaque.precoPrem)}</div></div>
-            </div>
-          ` : '<p class="text-muted">Nenhum serviço cadastrado ainda.</p>'}
+        <div class="card-header">
+          <span class="card-title">Resumo — ${MESES[mesAtual]}</span>
         </div>
-      </div>
-
-      <div class="card">
-        <div class="card-header"><span class="card-title">Resumo — ${MESES[mesAtual]}</span></div>
-        <div class="card-body">
+        <div class="card-body" style="padding:14px 18px">
           <table style="width:100%;font-size:13px">
-            <tr><td class="text-muted">Atendimentos</td><td class="text-right fw-600">${num(resMes.atendimentos)}</td></tr>
-            <tr><td class="text-muted">Faturamento</td><td class="text-right fw-600" style="color:var(--txt-green)">${R$(resMes.faturamento)}</td></tr>
-            <tr><td class="text-muted">Custo total serviços</td><td class="text-right">${R$(resMes.custoTotal)}</td></tr>
-            ${resMes.comissaoTotal > 0 ? `<tr><td class="text-muted">Comissões pagas</td><td class="text-right" style="color:var(--plum-light)">${R$(resMes.comissaoTotal)}</td></tr>` : ''}
-            <tr><td class="text-muted">Lucro real</td>
-              <td class="text-right fw-600" style="color:${resMes.lucroReal>=0?'var(--txt-green)':'var(--txt-red)'}">
-                ${R$(resMes.lucroReal)}
-              </td>
+            <tr>
+              <td class="text-muted" style="padding:5px 0">Atendimentos</td>
+              <td class="text-right fw-600" style="padding:5px 0">${num(resMes.atendimentos)}</td>
             </tr>
-            <tr><td class="text-muted">Margem real</td><td class="text-right">${pct(resMes.margem)}</td></tr>
-            <tr><td class="text-muted">Horas trabalhadas</td><td class="text-right">${Math.floor(resMes.tempoMin/60)}h ${resMes.tempoMin%60}min</td></tr>
+            <tr>
+              <td class="text-muted" style="padding:5px 0">Faturamento</td>
+              <td class="text-right fw-600 text-green" style="padding:5px 0">${R$(resMes.faturamento)}</td>
+            </tr>
+            <tr>
+              <td class="text-muted" style="padding:5px 0">Lucro real</td>
+              <td class="text-right fw-600 ${resMes.lucroReal >= 0 ? 'text-green' : 'text-red'}" style="padding:5px 0">${R$(resMes.lucroReal)}</td>
+            </tr>
+            ${resMes.comissaoTotal > 0 ? `
+            <tr>
+              <td class="text-muted" style="padding:5px 0">Comissoes pagas</td>
+              <td class="text-right text-plum" style="padding:5px 0">${R$(resMes.comissaoTotal)}</td>
+            </tr>` : ''}
+            <tr>
+              <td class="text-muted" style="padding:5px 0">Horas trabalhadas</td>
+              <td class="text-right" style="padding:5px 0">${Math.floor(resMes.tempoMin / 60)}h ${resMes.tempoMin % 60}min</td>
+            </tr>
           </table>
+          <div style="margin-top:10px;text-align:right">
+            <a href="#" id="linkVerDiario2" style="font-size:12px;color:var(--plum);text-decoration:none;font-weight:500">Ver detalhes financeiros →</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Amanhã (bônus) -->
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">Agenda de Amanha</span>
+        </div>
+        <div class="card-body" style="padding:14px 18px">
+          ${agendaAmanha.length
+            ? agendaAmanha.map(a => `
+              <div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--border);font-size:13px">
+                <span class="badge badge-plum" style="min-width:46px;text-align:center;font-weight:600">${a.horario || '—'}</span>
+                <span style="flex:1;color:var(--txt-dark)">${a.cliente || '—'}</span>
+                <span style="font-size:11px;color:var(--txt-muted)">${a.servicoNome || ''}</span>
+              </div>`).join('')
+            : `<div style="text-align:center;padding:20px 0;color:var(--txt-muted);font-size:13px">
+                 Nenhum agendamento para amanha
+               </div>`
+          }
+          <a href="#" id="linkVerAgenda2" style="font-size:12px;color:var(--plum);display:block;margin-top:8px;text-decoration:none;font-weight:500">Ver agenda completa →</a>
         </div>
       </div>
     </div>
-
-    ${totalFat > 0 ? `
-    <div class="card mt-16">
-      <div class="card-header"><span class="card-title">🔍 Destaques Operacionais</span></div>
-      <div class="card-body">
-        <table style="width:100%;font-size:13px">
-          <tr><td class="text-muted">Mês de maior faturamento</td><td class="text-right fw-600">${MESES[melhorMes]} — ${R$(fatMeses[melhorMes].fat)}</td></tr>
-          <tr><td class="text-muted">Comissões pagas no ano</td><td class="text-right" style="color:var(--plum-light)">${R$(totalComissao)}</td></tr>
-          <tr><td class="text-muted">Custo Fixo por Cliente</td><td class="text-right">${R$(cfPorCliente)}</td></tr>
-          <tr><td class="text-muted">Custo Fixo Bruto Médio / Mês</td><td class="text-right">${R$(custoFixoMedio)}</td></tr>
-          <tr><td class="text-muted">Serviços cadastrados</td><td class="text-right">${svcs.length}</td></tr>
-          <tr><td class="text-muted">Produtos no catálogo</td><td class="text-right">${Produtos.getAll().length}</td></tr>
-        </table>
-      </div>
-    </div>` : ''}
-
-    ${!totalAtend ? `
-    <div class="card mt-16" style="border:2px dashed var(--border)">
-      <div class="card-body" style="text-align:center;padding:32px">
-        <div style="font-size:28px;margin-bottom:12px">📌</div>
-        <div class="fw-600 font-serif" style="font-size:16px;margin-bottom:16px">Como começar</div>
-        <div style="text-align:left;max-width:400px;margin:0 auto;font-size:13px;color:var(--txt-muted);line-height:1.8">
-          1️⃣ <strong>Configurações</strong> → preencha o nome do salão e o ano<br>
-          2️⃣ <strong>Custos Fixos</strong> → insira os custos mensais<br>
-          3️⃣ <strong>Receitas Internas</strong> → informe repasses e aluguéis<br>
-          4️⃣ <strong>Serviços & Produtos</strong> → cadastre serviços e produtos<br>
-          5️⃣ <strong>Diário</strong> → registre cada atendimento e venda<br>
-          6️⃣ Dashboard e Controle Anual atualizam automaticamente ✅
-        </div>
-      </div>
-    </div>` : ''}
   `;
 
-  // ── Handlers dos widgets ───────────────────────────
-  document.getElementById('linkVerAgenda')?.addEventListener('click', e => {
-    e.preventDefault();
-    document.querySelector('[data-page="agenda"]')?.click();
-  });
-  document.getElementById('linkVerEstoque')?.addEventListener('click', e => {
-    e.preventDefault();
-    document.querySelector('[data-page="servicos"]')?.click();
-  });
-  document.getElementById('linkVerCRM')?.addEventListener('click', e => {
-    e.preventDefault();
-    document.querySelector('[data-page="clientes"]')?.click();
-  });
+  // ── Event listeners dos links ──────────────────────
+  const nav = (page) => document.querySelector(`[data-page="${page}"]`)?.click();
 
-  // ── Gráfico ────────────────────────────────────────
-  if (totalFat > 0) {
-    const maxVal = Math.max(...fatMeses.map(m => Math.max(m.fat, 0)), 1);
-    const chartEl = document.getElementById('chartFat');
-    if (chartEl) {
-      chartEl.innerHTML = fatMeses.map(m => `
-        <div class="chart-bar-wrap">
-          <div class="chart-val" style="font-size:10px">${m.fat ? R$(m.fat).replace('R$\xa0','') : ''}</div>
-          <div style="display:flex;gap:2px;align-items:flex-end;height:160px">
-            <div class="chart-bar" style="height:${Math.round((m.fat/maxVal)*160)}px;width:14px" title="Fat: ${R$(m.fat)}"></div>
-            <div class="chart-bar rose" style="height:${m.lucro>0?Math.round((m.lucro/maxVal)*160):2}px;width:10px;opacity:0.7" title="Lucro real: ${R$(m.lucro)}"></div>
-          </div>
-          <div class="chart-label">${m.mes}</div>
-        </div>
-      `).join('');
-    }
-  }
+  container.getElementById?.('linkVerAgenda')?.addEventListener('click', e => { e.preventDefault(); nav('agenda'); });
+  container.querySelector?.('#linkVerAgenda')?.addEventListener('click', e => { e.preventDefault(); nav('agenda'); });
+  container.querySelector?.('#linkVerAgenda2')?.addEventListener('click', e => { e.preventDefault(); nav('agenda'); });
+  container.querySelector?.('#linkVerDiario')?.addEventListener('click', e => { e.preventDefault(); nav('diario'); });
+  container.querySelector?.('#linkVerDiario2')?.addEventListener('click', e => { e.preventDefault(); nav('diario'); });
+  container.querySelector?.('#linkVerEstoque')?.addEventListener('click', e => { e.preventDefault(); nav('servicos'); });
+  container.querySelector?.('#linkVerCRM')?.addEventListener('click', e => { e.preventDefault(); nav('clientes'); });
+
+  // ── Inicia mensagens rotativas ──────────────────────
+  initMensagensRotativas(container.querySelector('#rotatingMsgBar'));
+
+  // ── Onboarding (primeiro acesso) ───────────────────
+  setTimeout(() => checkOnboarding(), 600);
 }
