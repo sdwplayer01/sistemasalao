@@ -23,6 +23,7 @@ export function renderClientes(container) {
       <input type="text" id="crmBusca" placeholder="🔍 Buscar cliente pelo nome..."
         style="max-width:280px" value="${_filtroNome}" />
       <span class="badge badge-plum" style="margin-left:auto">${todos.length} cliente${todos.length!==1?'s':''} indexado${todos.length!==1?'s':''}</span>
+      <button class="btn btn-primary btn-sm" id="btnNovoCliente" style="margin-left:8px"><i data-lucide="plus" style="width:14px;height:14px;margin-right:4px"></i> Novo Cliente</button>
     </div>
 
     <div id="crmTabela"></div>
@@ -33,7 +34,50 @@ export function renderClientes(container) {
     renderTabela(container, cfg);
   };
 
+  document.getElementById('btnNovoCliente').onclick = () => {
+    abrirModalNovoCliente(container, cfg);
+  };
+
   renderTabela(container, cfg);
+}
+
+function abrirModalNovoCliente(container, cfg) {
+  const body = `
+    <div class="form-group">
+      <label>Nome da Cliente *</label>
+      <input type="text" id="novoCliNome" placeholder="Ex: Maria Eduarda" autocomplete="off" />
+    </div>
+    <div class="form-group">
+      <label>WhatsApp / Telefone</label>
+      <input type="text" id="novoCliTel" placeholder="(00) 00000-0000" autocomplete="off" />
+    </div>
+    <div class="form-group">
+      <label>Observações Técnicas</label>
+      <textarea id="novoCliObs" rows="3" placeholder="Alergias, preferências de serviços..."></textarea>
+    </div>
+  `;
+
+  const footer = `
+    <button class="btn btn-secondary" id="btnFecharNovoCrm">Cancelar</button>
+    <button class="btn btn-primary" id="btnSalvarNovoCrm">Salvar Cliente</button>
+  `;
+
+  openModal('Novo Cliente Manual', body, footer);
+
+  document.getElementById('btnFecharNovoCrm').onclick = closeModal;
+  document.getElementById('btnSalvarNovoCrm').onclick = () => {
+    const nome = document.getElementById('novoCliNome').value.trim();
+    if (!nome) return toast('Nome é obrigatório.', 'error');
+    
+    const tel = document.getElementById('novoCliTel').value.trim();
+    const obs = document.getElementById('novoCliObs').value.trim();
+
+    Clientes.upsert(nome, { telefone: tel, obs });
+    toast('Cliente salva com sucesso!', 'success');
+    closeModal();
+    renderClientes(container);
+    if (window.lucide) window.lucide.createIcons();
+  };
 }
 
 function renderTabela(container, cfg) {
