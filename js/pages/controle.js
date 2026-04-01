@@ -13,6 +13,24 @@ export function renderControle(container) {
     const res  = Diario.resumoMes(ano, i);
     const cfBruto = Custos.totalMes(key);
     const cfReal  = Receitas.custoFixoRealMes(key);
+    const allDiario = Diario.getAll().filter(e => e.data && e.data.startsWith(key));
+    const allReceitas = Receitas.getAll().filter(r => r.data && r.data.startsWith(key));
+    
+    const propResp = cfg.profissionais && cfg.profissionais.length > 0 ? cfg.profissionais[0] : '';
+    const comissoes = allDiario.reduce((s, e) => s + (parseFloat(e.comissaoValor) || 0) * (parseInt(e.qtd) || 1), 0);
+    const fatTerceiros = allDiario.reduce((s, e) => {
+        if (e.profissional && e.profissional !== propResp) {
+            return s + (parseFloat(e.precoCobrado) || 0) * (parseInt(e.qtd) || 1);
+        }
+        return s;
+    }, 0);
+    const aluguelCadeiras = allReceitas.reduce((s, r) => {
+        if (r.categoria && r.categoria.toLowerCase() === 'aluguel') {
+            return s + (parseFloat(r.valor) || 0);
+        }
+        return s;
+    }, 0);
+
     return {
       mes, i,
       atend:       res.atendimentos,
@@ -25,6 +43,9 @@ export function renderControle(container) {
       cfReal,
       tempoH:      res.tempoMin / 60,
       ticket:      res.atendimentos > 0 && res.faturamento > 0 ? res.faturamento / res.atendimentos : 0,
+      comissoes,
+      fatTerceiros,
+      aluguelCadeiras,
     };
   });
 
@@ -37,6 +58,9 @@ export function renderControle(container) {
     cfBruto:     dados.reduce((s,d) => s+d.cfBruto, 0),
     cfReal:      dados.reduce((s,d) => s+d.cfReal, 0),
     tempoH:      dados.reduce((s,d) => s+d.tempoH, 0),
+    comissoes:   dados.reduce((s,d) => s+d.comissoes, 0),
+    fatTerceiros: dados.reduce((s,d) => s+d.fatTerceiros, 0),
+    aluguelCadeiras: dados.reduce((s,d) => s+d.aluguelCadeiras, 0),
   };
   T.margem = T.faturamento > 0 ? T.lucro / T.faturamento : 0;
   T.ticket = T.atend > 0 && T.faturamento > 0 ? T.faturamento / T.atend : 0;
@@ -61,12 +85,17 @@ export function renderControle(container) {
           ${linha('💰 Faturamento Bruto',  dados.map(d => d.faturamento ? R$(d.faturamento) : '—'), R$(T.faturamento), false, 'var(--txt-green)')}
           ${linha('📦 Custo de Produto',   dados.map(d => d.custoProd ? R$(d.custoProd) : '—'),  R$(T.custoProd))}
           ${linha('🏷 Custo Total Serviços',dados.map(d => d.custoTotal ? R$(d.custoTotal) : '—'), R$(T.custoTotal), true)}
+          ${linha('💸 Total de Comissões', dados.map(d => d.comissoes ? R$(d.comissoes) : '—'), R$(T.comissoes), false, 'var(--plum-light)')}
           ${linhaLucro('✅ Lucro Bruto',    dados.map(d => d.faturamento ? d.lucro : null),      T.lucro, T.faturamento > 0)}
           ${linhaMargem('📊 Margem de Lucro', dados.map(d => d.faturamento ? d.margem : null),  T.margem, T.faturamento > 0)}
           ${linha('🎫 Ticket Médio',        dados.map(d => d.ticket ? R$(d.ticket) : '—'),        R$(T.ticket))}
           ${linha('🏠 Custo Fixo Bruto',   dados.map(d => d.cfBruto ? R$(d.cfBruto) : '—'),     R$(T.cfBruto))}
           ${linha('✅ Custo Fixo Real',     dados.map(d => d.cfReal ? R$(d.cfReal) : '—'),       R$(T.cfReal))}
           ${linha('⏱ Horas Trabalhadas',   dados.map(d => d.tempoH ? d.tempoH.toFixed(1)+'h' : '—'), T.tempoH.toFixed(1)+'h')}
+          
+          <tr><td colspan="14" style="padding:10px;background:rgba(255,255,255,.02);font-size:11px;color:var(--txt-muted);letter-spacing:.5px;text-transform:uppercase;font-weight:600;text-align:center">Métricas Avançadas</td></tr>
+          ${linha('🤝 Fat. de Terceiros',   dados.map(d => d.fatTerceiros ? R$(d.fatTerceiros) : '—'), R$(T.fatTerceiros), false, '#A9E5C1')}
+          ${linha('🪑 Aluguel de Cadeiras', dados.map(d => d.aluguelCadeiras ? R$(d.aluguelCadeiras) : '—'), R$(T.aluguelCadeiras))}
         </tbody>
       </table>
     </div>

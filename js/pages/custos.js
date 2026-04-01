@@ -83,8 +83,8 @@ function renderForm(ano, mesIdx) {
 
         <div class="flex-between">
           <div>
-            <div style="font-size:12px;color:var(--txt-muted)">Total do mês</div>
-            <div class="font-serif" style="font-size:28px;font-weight:600;color:var(--noir)" id="cfTotal">${R$(total)}</div>
+            <div style="font-size:12px;color:#ffffff;font-weight:700">Total do mês</div>
+            <div class="font-serif" style="font-size:28px;font-weight:600;color:var(--txt-white)" id="cfTotal">${R$(total)}</div>
           </div>
           <button class="btn btn-primary" id="btnSalvarCustos">Salvar ${MESES[mesIdx]}</button>
         </div>

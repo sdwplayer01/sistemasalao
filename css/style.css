@@ -1,7 +1,7 @@
 /* ══════════════════════════════════════════════════
-   SALÃO PREMIUM — Design System
-   Ajustado para fundo escuro + dourado + roxo suave
-   Sem branco estourado. Menos briga visual.
+   SALÃO PREMIUM — Design System v2.3
+   Dark theme. Sidebar retrátil. Lucide-ready.
+   Inputs com contraste forçado (!important).
 ══════════════════════════════════════════════════ */
 
 :root {
@@ -50,7 +50,8 @@
   --radius:      14px;
   --radius-sm:   10px;
 
-  --sidebar-w:   240px;
+  --sidebar-w:           240px;
+  --sidebar-w-collapsed: 70px;   /* v2.3: sidebar retrátil */
   --topbar-h:    56px;
 
   --font-serif:  'Cormorant Garamond', Georgia, serif;
@@ -72,7 +73,7 @@ body {
   font-family: var(--font-sans);
   background:
     linear-gradient(rgba(10, 6, 18, .88), rgba(10, 6, 18, .90)),
-    url('https://raw.githubusercontent.com/sdwplayer01/sistemasalao_v2/refs/heads/main/ChatGPT%20Image%2030%20de%20mar.%20de%202026%2C%2001_33_31.png');
+    url('https://raw.githubusercontent.com/sdwplayer01/sistemasalao_v2/refs/heads/main/ChatGPT%20Image%2030%20de%20mar.%20de%202025%2C%2001_33_31.png');
   background-size: cover;
   background-position: center;
   background-attachment: fixed;
@@ -94,8 +95,33 @@ body {
   top: 0;
   left: 0;
   z-index: 100;
-  transition: transform .25s ease;
+  transition: width .25s ease, transform .25s ease;
   border-right: 1px solid rgba(255,255,255,.06);
+  overflow-x: hidden;
+}
+
+/* v2.3 — Estado colapsado (desktop) */
+.sidebar.collapsed {
+  width: var(--sidebar-w-collapsed);
+}
+.sidebar.collapsed .brand-text,
+.sidebar.collapsed .brand-name,
+.sidebar.collapsed .brand-sub    { display: none; }
+.sidebar.collapsed .menu-text    { display: none; }
+.sidebar.collapsed .nav-item     { justify-content: center; padding: 10px 8px; gap: 0; }
+.sidebar.collapsed .nav-icon     { margin: 0 auto; font-size: 18px; }
+/* Lucide SVGs dentro da sidebar colapsada */
+.sidebar.collapsed .nav-icon svg { width: 20px; height: 20px; }
+.sidebar.collapsed .sidebar-footer span,
+.sidebar.collapsed .btn-export,
+.sidebar.collapsed .btn-import,
+.sidebar.collapsed #userEmail,
+.sidebar.collapsed #btnLogout,
+.sidebar.collapsed #fileImport   { display: none; }
+.sidebar.collapsed .sidebar-footer { padding: 8px; }
+
+.sidebar.collapsed ~ .main-content {
+  margin-left: var(--sidebar-w-collapsed);
 }
 
 .sidebar-brand {
@@ -157,6 +183,8 @@ body {
   border-radius: 0;
   transition: all .15s;
   border-left: 3px solid transparent;
+  white-space: nowrap;
+  overflow: hidden;
 }
 
 .nav-item:hover {
@@ -175,6 +203,21 @@ body {
   font-size: 14px;
   width: 18px;
   text-align: center;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Lucide SVG dentro de nav-icon */
+.nav-icon svg {
+  width: 16px;
+  height: 16px;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 
 .sidebar-footer {
@@ -210,6 +253,7 @@ body {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
+  transition: margin-left .25s ease;
 }
 
 .top-bar {
@@ -227,14 +271,18 @@ body {
   box-shadow: var(--shadow-sm);
 }
 
+/* v2.3: btn-menu visível sempre (desktop = collapse, mobile = toggle) */
 .btn-menu {
-  display: none;
+  display: block;
   background: none;
   border: none;
   font-size: 20px;
   cursor: pointer;
   color: var(--plum-light);
+  padding: 4px;
+  transition: transform .15s;
 }
+.btn-menu:hover { transform: scale(1.1); }
 
 .top-bar-title {
   font-family: var(--font-serif);
@@ -306,9 +354,10 @@ body {
 /* ── GRID KPIs ───────────────────────────────── */
 .kpi-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 16px;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 15px;
   margin-bottom: 24px;
+  max-width: 1200px;
 }
 
 .kpi-card {
@@ -415,7 +464,11 @@ tbody tr.row-total td {
 .td-center { text-align: center; }
 .td-right { text-align: right; }
 
-/* ── FORMULÁRIOS (Atualizado com Refinamento) ── */
+/* ═══ FORMULÁRIOS — CONTRASTE FORÇADO (v2.3) ═══
+   !important garante que inline styles como
+   style="background:white" jamais sobreponham o
+   tema dark — elimina "branco sobre branco".
+══════════════════════════════════════════════════ */
 .form-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
@@ -442,49 +495,55 @@ label, .form-group label {
   letter-spacing: .5px;
 }
 
+/* v2.3: Labels de total/resumo devem ter contraste máximo */
+.label-total, .label-resumo {
+  color: #ffffff !important;
+  font-weight: 700 !important;
+}
+
 input, select, textarea {
   width: 100%;
   padding: 0 12px;
-  border: 1px solid var(--border);
+  border: 1px solid rgba(255,255,255,.10) !important;
   border-radius: 8px;
   font-family: var(--font-sans);
   font-size: 13px;
-  color: var(--txt-white);
-  background: rgba(255,255,255,.10);
+  color: #ffffff !important;
+  background-color: #2a1b3d !important;
   transition: all .18s ease;
   outline: none;
 }
 
-/* Ajustes de altura específicos para Inputs/Selects vs Textarea */
+/* Ajustes de altura específicos */
 input, select { height: 38px; }
 textarea { padding: 9px 12px; resize: vertical; min-height: 70px; }
 
 input::placeholder,
 textarea::placeholder {
-  color: rgba(255,255,255,.4);
+  color: rgba(255,255,255,.4) !important;
 }
 
 input:focus, select:focus, textarea:focus {
-  border-color: var(--plum);
-  background: rgba(255,255,255,.14);
+  border-color: var(--plum) !important;
+  background-color: #342350 !important;
   box-shadow: 0 0 0 2px rgba(123,79,142,.15);
 }
 
 input.rose-input {
-  background: var(--rose-pale);
-  border-color: var(--rose);
-  color: var(--txt-white);
+  background: var(--rose-pale) !important;
+  border-color: var(--rose) !important;
+  color: var(--txt-white) !important;
 }
 
 input.rose-input:focus {
-  border-color: var(--rose);
+  border-color: var(--rose) !important;
   box-shadow: 0 0 0 3px rgba(196,135,154,.15);
 }
 
 input[readonly], input[disabled] {
-  background: rgba(255,255,255,.04);
-  color: var(--plum-light);
-  border-color: rgba(255,255,255,.08);
+  background: rgba(255,255,255,.04) !important;
+  color: var(--plum-light) !important;
+  border-color: rgba(255,255,255,.08) !important;
   cursor: default;
 }
 
@@ -543,7 +602,7 @@ select {
   font-size: 12px;
 }
 
-/* Botão Ícone (Excluir/Ação - Refinado) */
+/* Botão Ícone (Excluir/Ação) */
 .btn-icon {
   width: 28px;
   height: 28px;
@@ -603,6 +662,7 @@ select {
 .badge-green { background: rgba(111, 191, 143, .12); color: var(--txt-green); border: 1px solid rgba(111, 191, 143, .14); }
 .badge-rose { background: rgba(196, 135, 154, .12); color: #F1C6D3; border: 1px solid rgba(196, 135, 154, .14); }
 .badge-warn { background: rgba(255, 193, 7, .12); color: #F0D58A; border: 1px solid rgba(255, 193, 7, .14); }
+.badge-blue { background: rgba(126,177,255,.12); color: var(--txt-blue); border: 1px solid rgba(126,177,255,.18); }
 
 /* ── SECTION HEADER ──────────────────────────── */
 .section-title {
@@ -752,10 +812,11 @@ select {
 
 /* ── RESPONSIVE ───────────────────────────────── */
 @media (max-width: 768px) {
-  .sidebar { transform: translateX(-100%); }
+  .sidebar { transform: translateX(-100%); width: var(--sidebar-w); }
   .sidebar.open { transform: translateX(0); }
-  .main-content { margin-left: 0; }
-  .btn-menu { display: block; }
+  .sidebar.collapsed { width: var(--sidebar-w); transform: translateX(-100%); } /* mobile: collapsed não muda nada */
+  .sidebar.collapsed.open { transform: translateX(0); width: var(--sidebar-w); }
+  .main-content { margin-left: 0 !important; }
   .kpi-grid { grid-template-columns: 1fr 1fr; }
   .form-grid.cols-2,
   .form-grid.cols-3,
@@ -764,6 +825,7 @@ select {
   .preco-grid { grid-template-columns: 1fr; }
   .modal { width: 95%; }
   .flex-between { flex-direction: column; gap: 12px; align-items: flex-start; }
+  .widget-grid { grid-template-columns: 1fr !important; }
 }
 
 @media (max-width: 480px) {
@@ -793,3 +855,222 @@ select {
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: rgba(214, 184, 233, .45); border-radius: 3px; }
 ::-webkit-scrollbar-thumb:hover { background: rgba(214, 184, 233, .68); }
+
+/* ── v2.3 — Widget Grid (Dashboard 360°) ─────────────── */
+.widget-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 15px;
+  margin-bottom: 24px;
+  max-width: 1200px;
+}
+
+.widget-card {
+  background: var(--bg-card);
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  padding: 16px;
+  box-shadow: var(--shadow-sm);
+  backdrop-filter: blur(8px);
+  transition: box-shadow .2s;
+}
+
+.widget-card:hover {
+  box-shadow: var(--shadow-md);
+}
+
+.widget-title {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .6px;
+  color: var(--txt-muted);
+  margin-bottom: 12px;
+}
+
+/* ── v2.3 — PDV Toggle Tipo ──────────────────────────── */
+.pdv-tipo-toggle {
+  display: flex;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.pdv-tipo-btn {
+  flex: 1;
+  padding: 9px 12px;
+  background: transparent;
+  border: none;
+  color: var(--txt-muted);
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all .15s;
+}
+
+.pdv-tipo-btn.active {
+  background: var(--plum);
+  color: var(--txt-white);
+  font-weight: 600;
+}
+
+.pdv-tipo-btn:not(.active):hover {
+  background: rgba(255,255,255,.06);
+  color: var(--txt-white);
+}
+
+/* ── v2.3 — Tabs Bar (Serviços / Produtos) ───────────── */
+.tabs-bar {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 20px;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 0;
+}
+
+.tab-btn {
+  padding: 9px 18px;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: var(--txt-muted);
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  margin-bottom: -1px;
+  transition: all .15s;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.tab-btn:hover {
+  color: var(--txt-white);
+}
+
+.tab-btn.active {
+  color: var(--plum-light);
+  border-bottom-color: var(--plum-mid);
+  font-weight: 600;
+}
+
+/* ── v2.3 — Link de Cliente Clicável ────────────────── */
+.cliente-link {
+  background: none;
+  border: none;
+  color: var(--txt-white);
+  font-weight: 600;
+  cursor: pointer;
+  font-family: var(--font-sans);
+  font-size: inherit;
+  padding: 0;
+  text-align: left;
+  text-decoration: underline dotted rgba(255,255,255,.25);
+  transition: color .15s;
+}
+
+.cliente-link:hover {
+  color: var(--plum-light);
+  text-decoration-color: var(--plum-mid);
+}
+
+/* ── Login screen (v2.3 — dark theme consistente) ──────── */
+.login-wrap {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, var(--noir) 0%, var(--plum) 100%);
+  padding: 24px;
+}
+
+.login-card {
+  background: var(--bg-card);
+  border-radius: 16px;
+  padding: 36px 32px;
+  width: 100%;
+  max-width: 420px;
+  box-shadow: 0 20px 60px rgba(44,22,84,.3);
+  border: 1px solid var(--border);
+}
+
+.login-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 28px;
+}
+
+.login-tabs {
+  display: flex;
+  gap: 0;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+  margin-bottom: 4px;
+}
+
+.login-tab {
+  flex: 1;
+  padding: 9px;
+  border: none;
+  background: rgba(255,255,255,.06);
+  color: var(--txt-muted);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all .2s;
+}
+
+.login-tab.active {
+  background: var(--plum);
+  color: white;
+}
+
+.login-divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 18px 0;
+  color: var(--txt-muted);
+  font-size: 12px;
+}
+.login-divider::before,
+.login-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+.btn-google {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 10px 16px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius);
+  background: rgba(255,255,255,.08);
+  color: var(--txt-white);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: border-color .2s, box-shadow .2s;
+}
+.btn-google:hover {
+  border-color: var(--plum);
+  box-shadow: 0 2px 8px rgba(123,79,142,.2);
+}
+
+.login-erro {
+  font-size: 12px;
+  padding: 8px 12px;
+  border-radius: 6px;
+  margin-bottom: 8px;
+}
+
+.w-full { width: 100%; }

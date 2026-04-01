@@ -7,94 +7,117 @@
   <link rel="stylesheet" href="css/style.css" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <!-- Lucide Icons (v2.3) — ícones vetoriais leves -->
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
 </head>
 <body>
 
-  <!-- ── SIDEBAR ─────────────────────────────────── -->
-  <aside class="sidebar" id="sidebar">
-    <div class="sidebar-brand">
-      <span class="brand-icon">✦</span>
-      <div class="brand-text">
-        <span class="brand-name" id="sidebarNomeSalao">Salão Premium</span>
-        <span class="brand-sub">Gestão Inteligente</span>
+  <!-- ── TELA DE LOGIN ───────────────────────────────── -->
+  <div id="page-login" style="display:none"></div>
+
+  <!-- ── APP SHELL (só aparece após login) ───────────── -->
+  <div id="app-shell" style="display:none">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-brand">
+        <span class="brand-icon">✦</span>
+        <div class="brand-text">
+          <span class="brand-name" id="sidebarNomeSalao">Salão Premium</span>
+          <span class="brand-sub">Gestão Inteligente</span>
+        </div>
       </div>
-    </div>
 
-    <nav class="sidebar-nav">
-      <button class="nav-item active" data-page="dashboard">
-        <span class="nav-icon">◈</span> Dashboard
-      </button>
-      <button class="nav-item" data-page="agenda">
-        <span class="nav-icon">🗓</span> Agenda
-      </button>
-      <button class="nav-item" data-page="diario">
-        <span class="nav-icon">📅</span> Diário
-      </button>
-      <button class="nav-item" data-page="servicos">
-        <span class="nav-icon">✂</span> Serviços
-      </button>
-      <button class="nav-item" data-page="custos">
-        <span class="nav-icon">🏠</span> Custos Fixos
-      </button>
-      <button class="nav-item" data-page="receitas">
-        <span class="nav-icon">💚</span> Receitas Internas
-      </button>
-      <button class="nav-item" data-page="controle">
-        <span class="nav-icon">📊</span> Controle Anual
-      </button>
-      <button class="nav-item" data-page="configuracoes">
-        <span class="nav-icon">⚙</span> Configurações
-      </button>
-    </nav>
+      <nav class="sidebar-nav">
+        <button class="nav-item" data-page="dashboard">
+          <span class="nav-icon"><i data-lucide="layout-dashboard"></i></span>
+          <span class="menu-text">Dashboard</span>
+        </button>
+        <button class="nav-item" data-page="agenda">
+          <span class="nav-icon"><i data-lucide="calendar-check"></i></span>
+          <span class="menu-text">Agenda</span>
+        </button>
+        <button class="nav-item" data-page="diario">
+          <span class="nav-icon"><i data-lucide="notebook-pen"></i></span>
+          <span class="menu-text">Diário / Caixa</span>
+        </button>
+        <button class="nav-item" data-page="servicos">
+          <span class="nav-icon"><i data-lucide="scissors"></i></span>
+          <span class="menu-text">Serviços & Produtos</span>
+        </button>
+        <button class="nav-item" data-page="custos">
+          <span class="nav-icon"><i data-lucide="receipt"></i></span>
+          <span class="menu-text">Custos Fixos</span>
+        </button>
+        <button class="nav-item" data-page="receitas">
+          <span class="nav-icon"><i data-lucide="trending-up"></i></span>
+          <span class="menu-text">Receitas Internas</span>
+        </button>
+        <button class="nav-item" data-page="controle">
+          <span class="nav-icon"><i data-lucide="bar-chart-2"></i></span>
+          <span class="menu-text">Controle Anual</span>
+        </button>
+        <button class="nav-item" data-page="clientes">
+          <span class="nav-icon"><i data-lucide="users"></i></span>
+          <span class="menu-text">Clientes</span>
+        </button>
+        <button class="nav-item" data-page="configuracoes">
+          <span class="nav-icon"><i data-lucide="settings"></i></span>
+          <span class="menu-text">Configurações</span>
+        </button>
+      </nav>
 
-    <div class="sidebar-footer">
-      <button class="btn-export" id="btnExport" title="Exportar dados">
-        ↓ Exportar JSON
-      </button>
-      <button class="btn-import" id="btnImport" title="Importar dados">
-        ↑ Importar JSON
-      </button>
-      <input type="file" id="fileImport" accept=".json" style="display:none" />
-    </div>
-  </aside>
-
-  <!-- ── MAIN ────────────────────────────────────── -->
-  <main class="main-content">
-    <div class="top-bar">
-      <button class="btn-menu" id="btnMenu">☰</button>
-      <div class="top-bar-title" id="topBarTitle">Dashboard</div>
-      <div class="top-bar-right">
-        <span class="badge-mes" id="badgeMes"></span>
+      <div class="sidebar-footer">
+        <button class="btn-export" id="btnExport">↓ Exportar JSON</button>
+        <button class="btn-import" id="btnImport">↑ Importar JSON</button>
+        <input type="file" id="fileImport" accept=".json" style="display:none" />
+        <div style="margin-top:12px;padding-top:12px;border-top:1px solid rgba(255,255,255,.15)">
+          <div id="userEmail" style="font-size:11px;color:rgba(255,255,255,.5);margin-bottom:6px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></div>
+          <button id="btnLogout" style="width:100%;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:rgba(255,255,255,.7);padding:7px;border-radius:6px;font-size:12px;cursor:pointer">
+            ↩ Sair
+          </button>
+        </div>
       </div>
-    </div>
+    </aside>
 
-    <!-- Pages -->
-    <div id="page-dashboard"    class="page active"></div>
-    <div id="page-agenda"       class="page"></div>
-    <div id="page-diario"       class="page"></div>
-    <div id="page-servicos"     class="page"></div>
-    <div id="page-custos"       class="page"></div>
-    <div id="page-receitas"     class="page"></div>
-    <div id="page-controle"     class="page"></div>
-    <div id="page-configuracoes" class="page"></div>
-  </main>
+    <!-- MAIN -->
+    <main class="main-content">
+      <div class="top-bar">
+        <button class="btn-menu" id="btnMenu">☰</button>
+        <div class="top-bar-title" id="topBarTitle">Dashboard</div>
+        <div class="top-bar-right">
+          <span class="badge-mes" id="badgeMes"></span>
+        </div>
+      </div>
 
-  <!-- ── MODAL GENÉRICO ──────────────────────────── -->
+      <div id="page-dashboard"    class="page active"></div>
+      <div id="page-agenda"       class="page"></div>
+      <div id="page-diario"       class="page"></div>
+      <div id="page-servicos"     class="page"></div>
+      <div id="page-custos"       class="page"></div>
+      <div id="page-receitas"     class="page"></div>
+      <div id="page-controle"     class="page"></div>
+      <div id="page-clientes"     class="page"></div>
+      <div id="page-configuracoes" class="page"></div>
+    </main>
+
+  </div><!-- /app-shell -->
+
+  <!-- MODAL -->
   <div class="modal-overlay" id="modalOverlay">
     <div class="modal" id="modal">
       <div class="modal-header">
         <h3 id="modalTitle">Título</h3>
         <button class="modal-close" id="modalClose">×</button>
       </div>
-      <div class="modal-body" id="modalBody"></div>
+      <div class="modal-body"   id="modalBody"></div>
       <div class="modal-footer" id="modalFooter"></div>
     </div>
   </div>
 
-  <!-- ── TOAST ───────────────────────────────────── -->
+  <!-- TOAST -->
   <div class="toast-container" id="toastContainer"></div>
 
-  <!-- ── SCRIPTS ─────────────────────────────────── -->
   <script type="module" src="js/app.js"></script>
 </body>
 </html>

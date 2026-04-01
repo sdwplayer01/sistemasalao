@@ -1,5 +1,6 @@
 // ═══════════════════════════════════════════════════════
-// utils.js — Formatação e helpers
+// utils.js — Formatação, helpers e máscara de moeda
+// v2.3: + formatarMoeda() + applyMoneyMask()
 // ═══════════════════════════════════════════════════════
 
 export const R$ = (v) =>
@@ -52,6 +53,45 @@ export function linkWA(telefone) {
   return `https://wa.me/55${n}`;
 }
 
+// ── Máscara de moeda (Anotação 4b) ─────────────────────
+// Formata 2500 → "R$ 2.500,00" no blur
+// Retorna o valor numérico limpo para usar em cálculos
+export function formatarMoeda(valor) {
+  const n = parseFloat(String(valor).replace(/[^\d.,\-]/g, '').replace(',', '.'));
+  if (isNaN(n)) return '';
+  return n.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+}
+
+// Aplica listener blur em inputs type=number de preço
+// Converte para exibição formatada on blur, volta para número on focus
+// Uso: após renderizar HTML, chamar applyMoneyMask(container, '.money-input')
+export function applyMoneyMask(container, selector = '[data-money]') {
+  if (!container) return;
+  container.querySelectorAll(selector).forEach(input => {
+    // Marca que já foi bindado para evitar duplicidade
+    if (input._moneyMask) return;
+    input._moneyMask = true;
+
+    input.addEventListener('blur', () => {
+      const val = parseFloat(input.value);
+      if (!isNaN(val) && val > 0) {
+        input.dataset.rawValue = val;
+        input.type = 'text';
+        input.value = formatarMoeda(val);
+      }
+    });
+
+    input.addEventListener('focus', () => {
+      if (input.dataset.rawValue) {
+        input.type = 'number';
+        input.value = input.dataset.rawValue;
+        input.dataset.rawValue = '';
+      }
+    });
+  });
+}
+
+// ── UI helpers ─────────────────────────────────────────
 export function toast(msg, tipo = 'default', dur = 3000) {
   const tc = document.getElementById('toastContainer');
   const t  = document.createElement('div');
@@ -66,6 +106,8 @@ export function openModal(title, bodyHTML, footerHTML = '') {
   document.getElementById('modalBody').innerHTML     = bodyHTML;
   document.getElementById('modalFooter').innerHTML   = footerHTML;
   document.getElementById('modalOverlay').classList.add('open');
+  // Lucide: re-renderiza ícones dentro do modal
+  if (window.lucide) window.lucide.createIcons();
 }
 
 export function closeModal() {
@@ -93,4 +135,9 @@ export function emptyState(msg = 'Nenhum dado encontrado.') {
     <div class="empty-icon">✦</div>
     <p>${msg}</p>
   </div>`;
+}
+
+// Renderiza ícones Lucide após injeção de HTML dinâmico
+export function initIcons() {
+  if (window.lucide) window.lucide.createIcons();
 }
