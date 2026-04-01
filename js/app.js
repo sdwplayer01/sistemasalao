@@ -131,21 +131,26 @@ async function initApp(user) {
     sidebar.classList.add('collapsed')
   }
 
-  document.getElementById('btnMenu').onclick = () => {
-    if (window.innerWidth <= 768) {
-      sidebar.classList.toggle('open')          // mobile: abre/fecha
-    } else {
-      sidebar.classList.toggle('collapsed')    // desktop: colapsa/expande
+  const btnMenu = document.getElementById('btnMenu')
+  if (btnMenu) {
+    btnMenu.onclick = () => {
+      sidebar.classList.toggle('collapsed')
       localStorage.setItem('sidebarCollapsed', sidebar.classList.contains('collapsed'))
+    }
+  }
+
+  const btnMenuMobile = document.getElementById('btnMenuMobile')
+  if (btnMenuMobile) {
+    btnMenuMobile.onclick = () => {
+      sidebar.classList.toggle('open')
     }
   }
 
   // Fecha sidebar mobile ao clicar fora
   document.addEventListener('click', e => {
-    const btnMenu = document.getElementById('btnMenu')
     if (window.innerWidth <= 768 &&
         !sidebar.contains(e.target) &&
-        !btnMenu.contains(e.target)) {
+        btnMenuMobile && !btnMenuMobile.contains(e.target)) {
       sidebar.classList.remove('open')
     }
   })

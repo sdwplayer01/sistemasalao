@@ -178,6 +178,19 @@ export function renderDashboard(container) {
         }
         ${retencao.length ? `<a href="#" id="linkVerCRM" style="font-size:12px;color:var(--plum-light);display:block;margin-top:8px">Ver todos no CRM →</a>` : ''}
       </div>
+
+      <!-- Widget E: Lembretes de Operação -->
+      <div class="widget-card" style="grid-column: 1 / -1; display:flex; flex-direction:column; justify-content:center; align-items:center;  background:rgba(201, 169, 110, .08); border-color:rgba(201, 169, 110, .2) ">
+        <div class="widget-title" style="color:#D4B37F; margin-bottom:12px; font-size:12px"><i data-lucide="bell-ring" style="width:14px;height:14px;margin-right:6px"></i>Lembretes de Operação</div>
+        <div style="font-size:13px; color:var(--txt-white);text-align:center;max-width:400px;line-height:1.6">
+          <ul style="list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:8px">
+            <li style="padding:8px;border-radius:6px;background:rgba(255,255,255,.03)">💡 Tem alguma <strong>conta fixa</strong> para pagar hoje? Confira em Custos.</li>
+            <li style="padding:8px;border-radius:6px;background:${estoqBaixo.length > 0 ? 'rgba(255, 193, 7, .12)' : 'rgba(255,255,255,.03)'};color:${estoqBaixo.length > 0 ? '#F0D58A' : 'inherit'}">📦 Preciso fazer algum pedido de <strong>estoque</strong>? ${estoqBaixo.length > 0 ? '<strong>⚠ Sim, produtos esgotando!</strong>' : ''}</li>
+            <li style="padding:8px;border-radius:6px;background:rgba(255,255,255,.03)">💬 Tem alguma cliente esperando <strong>produto ou orçamento</strong> no WhatsApp?</li>
+          </ul>
+        </div>
+      </div>
+
     </div><!-- /widget-grid -->
 
     <!-- Gráfico Faturamento vs Lucro -->
