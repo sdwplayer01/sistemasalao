@@ -1,3 +1,4 @@
+import * as UI from '../ui.js';
 // ═══════════════════════════════════════════════════════
 // pages/servicos.js — Serviços & Produtos (v2.2)
 // Abas: [Serviços] [Produtos]

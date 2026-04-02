@@ -1,3 +1,4 @@
+import * as UI from '../ui.js';
 // ═══════════════════════════════════════════════════════
 // pages/dashboard.js — Dashboard Operacional v3.0
 // - KPIs pesados removidos do topo → ficam em Diário/Caixa

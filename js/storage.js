@@ -55,6 +55,19 @@ const MESES = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho',
 let _syncTimer = null
 const _dirtyKeys = new Set()
 
+// ── Fase 3: Cache de performance ─────────────────────
+// _statsCache: memoiza calcStats() por nome de cliente.
+// Invalidado em Diario.add/update/remove e Agenda.add/update/remove.
+// _syncedThisSession: evita rodar syncFromDiarioAgenda() múltiplas vezes
+// por sessão. Invalidado nos mesmos pontos.
+const _statsCache = new Map()
+let _syncedThisSession = false
+
+function _invalidateClienteCache() {
+  _statsCache.clear()
+  _syncedThisSession = false
+}
+
 function _scheduleSync(lsKey) {
   _dirtyKeys.add(lsKey)
   clearTimeout(_syncTimer)
@@ -229,9 +242,22 @@ export const Produtos = {
 export const Diario = {
   getAll:  ()    => _load(KEYS.DIARIO, []),
   save:    (arr) => _save(KEYS.DIARIO, arr),
-  add(entry)    { const all = Diario.getAll(); entry.id = Date.now(); all.unshift(entry); _save(KEYS.DIARIO, all); return entry },
-  update(id, d) { _save(KEYS.DIARIO, Diario.getAll().map(e => e.id===id ? {...e,...d,id} : e)) },
-  remove(id)    { _save(KEYS.DIARIO, Diario.getAll().filter(e => e.id!==id)) },
+  add(entry) {
+    const all = Diario.getAll()
+    entry.id = Date.now()
+    all.unshift(entry)
+    _save(KEYS.DIARIO, all)
+    _invalidateClienteCache()  // fase 3: invalida cache de stats e sync flag
+    return entry
+  },
+  update(id, d) {
+    _save(KEYS.DIARIO, Diario.getAll().map(e => e.id===id ? {...e,...d,id} : e))
+    _invalidateClienteCache()  // fase 3
+  },
+  remove(id) {
+    _save(KEYS.DIARIO, Diario.getAll().filter(e => e.id!==id))
+    _invalidateClienteCache()  // fase 3
+  },
   getByMes(ano, mesIdx) {
     const prefix = `${ano}-${String(mesIdx+1).padStart(2,'0')}`
     return Diario.getAll().filter(e => e.data && e.data.startsWith(prefix))
@@ -275,14 +301,20 @@ export const Agenda = {
   add(entry) {
     const all = Agenda.getAll(); entry.id = Date.now(); all.push(entry)
     all.sort((a,b) => ((b.data||'')+(b.horario||'')).localeCompare((a.data||'')+(a.horario||'')))
-    _save(KEYS.AGENDA, all); return entry
+    _save(KEYS.AGENDA, all)
+    _invalidateClienteCache()  // fase 3
+    return entry
   },
   update(id, d) {
     const all = Agenda.getAll().map(e => e.id===id ? {...e,...d,id} : e)
     all.sort((a,b) => ((b.data||'')+(b.horario||'')).localeCompare((a.data||'')+(a.horario||'')))
     _save(KEYS.AGENDA, all)
+    _invalidateClienteCache()  // fase 3
   },
-  remove(id) { _save(KEYS.AGENDA, Agenda.getAll().filter(e => e.id!==id)) },
+  remove(id) {
+    _save(KEYS.AGENDA, Agenda.getAll().filter(e => e.id!==id))
+    _invalidateClienteCache()  // fase 3
+  },
   getAmanha() {
     const d = new Date(); d.setDate(d.getDate()+1)
     const str = d.toISOString().slice(0,10)
@@ -335,6 +367,9 @@ export const Clientes = {
   // Data Mining: indexa todos os nomes únicos do Diário + Agenda
   // Deve ser chamado ao abrir a tela de Clientes para garantir lista atualizada
   syncFromDiarioAgenda() {
+    // Fase 3: evita reindexação completa a cada chamada na mesma sessão.
+    // _syncedThisSession é invalidado quando Diario ou Agenda têm mutações.
+    if (_syncedThisSession) return
     const nomesD = Diario.getAll().map(e => e.cliente).filter(Boolean)
     const nomesA = Agenda.getAll().map(e => e.cliente).filter(Boolean)
     const unicos = [...new Set(
@@ -344,11 +379,17 @@ export const Clientes = {
     unicos.forEach(nome => {
       if (!Clientes.getByNome(nome)) Clientes.upsert(nome, {})
     })
+    _syncedThisSession = true
   },
 
-  // Calcula estatísticas em tempo real — sem dados redundantes no storage
+  // Calcula estatísticas em tempo real — sem dados redundantes no storage.
+  // Fase 3: resultado memoizado em _statsCache por nome normalizado.
+  // Cache é invalidado via _invalidateClienteCache() nas mutações de Diario/Agenda.
   calcStats(nome) {
     const k = Clientes._key(nome)
+
+    if (_statsCache.has(k)) return _statsCache.get(k)
+
     const registros = Diario.getAll().filter(e =>
       Clientes._key(e.cliente || '') === k
     )
@@ -367,7 +408,9 @@ export const Clientes = {
       ...agendamentos.map(e => ({ ...e, _origem: 'agenda' })),
     ].sort((a,b) => (b.data||'').localeCompare(a.data||''))
 
-    return { registros, agendamentos, qtdTotal, fat, ticket, ultimaVisita, primeiraVisita, timeline }
+    const result = { registros, agendamentos, qtdTotal, fat, ticket, ultimaVisita, primeiraVisita, timeline }
+    _statsCache.set(k, result)
+    return result
   },
 }
 
@@ -379,6 +422,7 @@ export async function loadFromSupabase() {
 // ── Limpa localStorage ao fazer logout ─────────────────
 export function clearLocalData() {
   Object.values(KEYS).forEach(k => localStorage.removeItem(k))
+  _invalidateClienteCache()  // fase 3: limpa cache ao fazer logout
 }
 
 // ── Export / Import JSON (backup local) ───────────────

@@ -1,3 +1,4 @@
+import * as UI from '../ui.js';
 // ═══════════════════════════════════════════════════════
 // pages/clientes.js — CRM de Clientes (v2.2)
 // Rota própria: indexa nomes do Diário + Agenda,

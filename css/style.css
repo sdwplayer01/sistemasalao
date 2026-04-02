@@ -1131,3 +1131,420 @@ textarea { resize: vertical; min-height: 70px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: var(--plum-light); border-radius: 3px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--plum-mid); }
+
+/* ══════════════════════════════════════════════════════
+   FASE 1 — Classes utilitárias centralizadas
+   Substitui inline styles repetidos em diario.js,
+   clientes.js, controle.js, agenda.js, custos.js
+   Nunca edite inline; edite aqui.
+══════════════════════════════════════════════════════ */
+
+/* ── Grid de mini-KPIs (resumo de período/dia) ───────
+   Uso: <div class="kpi-mini-grid"> ... </div>
+   Substitui: grid-template-columns:repeat(auto-fit,minmax(130px,1fr))
+   Aparece em: diario.js renderResumoMes(), agenda.js, controle.js
+──────────────────────────────────────────────────── */
+.kpi-mini-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.kpi-mini-card {
+  background: var(--bg-card);
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  padding: 12px 16px;
+  box-shadow: var(--shadow-sm);
+}
+
+.kpi-mini-card .kpi-label { margin-bottom: 3px; }
+.kpi-mini-card .kpi-value { font-size: 20px; }
+
+/* Variantes de cor herdadas do .kpi-card */
+.kpi-mini-card.green { border-left: 3px solid #4CAF50; }
+.kpi-mini-card.plum  { border-left: 3px solid var(--plum); }
+.kpi-mini-card.rose  { border-left: 3px solid var(--rose); }
+.kpi-mini-card.blue  { border-left: 3px solid #1A4FA0; }
+.kpi-mini-card.warn  { border-left: 3px solid #F57C00; }
+.kpi-mini-card.green-border { border-left: 3px solid var(--txt-green); }
+.kpi-mini-card.plum-mid-border { border-left: 3px solid var(--plum-mid); }
+
+/* ── Linha de timeline ─────────────────────────────
+   Uso: <div class="timeline-item"> ... </div>
+   Aparece em: clientes.js (perfil completo + CRM rápido),
+               diario.js (modal perfil cliente)
+──────────────────────────────────────────────────── */
+.timeline-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 13px;
+}
+
+.timeline-item:last-child { border-bottom: none; }
+
+.timeline-data {
+  color: var(--txt-muted);
+  min-width: 72px;
+  font-size: 12px;
+  flex-shrink: 0;
+}
+
+.timeline-item-nome {
+  flex: 1;
+  color: var(--txt-dark);
+}
+
+.timeline-valor {
+  color: var(--txt-green);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* ── Preview de lucro (formulário de lançamento) ───
+   Uso: <div class="lucro-preview lucro-preview--pos/neg"> ...
+   Aparece em: diario.js abrirFormAtend() — função atualizarLucro()
+──────────────────────────────────────────────────── */
+.lucro-preview {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  padding: 10px 14px;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  margin-top: 8px;
+  transition: background .2s;
+}
+
+.lucro-preview--pos { background: var(--sage); }
+.lucro-preview--neg { background: #FEE2E2; }
+
+.lucro-preview strong { font-weight: 700; }
+
+/* ── Rodapé de totais por forma de pagamento (Caixa) ─
+   Uso: <div class="pgto-totals"> ... </div>
+   Aparece em: diario.js renderTotaisPgto() — Fase 4
+──────────────────────────────────────────────────── */
+.pgto-totals {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 14px 18px;
+  background: var(--bg-card);
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  margin-top: 12px;
+  box-shadow: var(--shadow-sm);
+}
+
+.pgto-total-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 8px 16px;
+  border-radius: var(--radius-sm);
+  background: var(--ghost);
+  border: 1px solid var(--border);
+  min-width: 110px;
+}
+
+.pgto-total-item.total-geral {
+  background: var(--sage);
+  border-color: #A8D5B5;
+}
+
+.pgto-total-label {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--txt-muted);
+  text-transform: uppercase;
+  letter-spacing: .5px;
+}
+
+.pgto-total-valor {
+  font-family: var(--font-serif);
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--noir);
+}
+
+.pgto-total-item.total-geral .pgto-total-valor {
+  color: var(--txt-green);
+}
+
+/* ── Tabs Hoje / Histórico (Caixa) ────────────────
+   Uso: <div class="caixa-tabs"> ... </div>
+   Aparece em: diario.js renderDiario() — Fase 4
+──────────────────────────────────────────────────── */
+.caixa-tabs {
+  display: flex;
+  gap: 0;
+  border-bottom: 2px solid var(--border);
+  margin-bottom: 20px;
+}
+
+.caixa-tab-btn {
+  padding: 10px 24px;
+  background: none;
+  border: none;
+  border-bottom: 3px solid transparent;
+  margin-bottom: -2px;
+  font-family: var(--font-sans);
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--txt-muted);
+  cursor: pointer;
+  transition: all .15s;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.caixa-tab-btn:hover {
+  color: var(--plum);
+}
+
+.caixa-tab-btn.active {
+  color: var(--plum);
+  border-bottom-color: var(--plum);
+  font-weight: 600;
+}
+
+.caixa-tab-badge {
+  background: var(--lavender);
+  color: var(--plum);
+  border-radius: 20px;
+  padding: 1px 7px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+/* ── Bloco do formulário de lançamento ────────────
+   Uso: <div class="form-bloco"> ... </div>
+   Aparece em: diario.js abrirFormAtend() — Fase 4
+   Agrupa os 3 blocos do formulário refatorado
+──────────────────────────────────────────────────── */
+.form-bloco {
+  background: var(--ghost);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 14px 16px;
+  margin-bottom: 12px;
+}
+
+.form-bloco-titulo {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .6px;
+  color: var(--txt-muted);
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Campo de valor cobrado — destaque na Caixa */
+.input-cobrado {
+  font-family: var(--font-serif) !important;
+  font-size: 22px !important;
+  font-weight: 700 !important;
+  color: var(--txt-green) !important;
+  text-align: center !important;
+  border-color: var(--sage-dark) !important;
+  background: var(--sage) !important;
+  padding: 12px !important;
+}
+
+.input-cobrado:focus {
+  border-color: var(--txt-green) !important;
+  box-shadow: 0 0 0 3px rgba(27, 107, 58, .12) !important;
+  background: var(--white) !important;
+}
+
+/* ── Tabela compacta de hoje (Caixa modo Hoje) ────
+   Substitui: a tabela de 15 colunas no modo operacional
+   Aparece em: diario.js renderTabelaHoje() — Fase 4
+──────────────────────────────────────────────────── */
+.tabela-hoje thead tr { background: var(--plum); }
+
+.tabela-hoje tbody tr { border-bottom: 1px solid var(--border); }
+
+.tabela-hoje tbody tr:hover { background: var(--ghost); }
+
+/* ── Linha de estatística em modal (cliente/perfil) ─
+   Substitui: tabela inline com style no modal de clientes
+   Uso: <div class="stat-row"> <span>Label</span><span>Valor</span></div>
+──────────────────────────────────────────────────── */
+.stat-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 0;
+  font-size: 13px;
+  border-bottom: 1px solid var(--border);
+}
+
+.stat-row:last-child { border-bottom: none; }
+
+.stat-row .stat-label { color: var(--txt-muted); }
+
+.stat-row .stat-val {
+  font-weight: 600;
+  color: var(--txt-dark);
+}
+
+.stat-row .stat-val.green { color: var(--txt-green); }
+.stat-row .stat-val.red   { color: var(--txt-red); }
+.stat-row .stat-val.plum  { color: var(--plum); }
+
+/* ── Barra de ação da Caixa ────────────────────────
+   Botões de ação principais da tela de Hoje
+──────────────────────────────────────────────────── */
+.caixa-actions {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.btn-caixa-primary {
+  flex: 1;
+  min-width: 180px;
+  padding: 12px 20px;
+  border-radius: var(--radius);
+  border: none;
+  font-family: var(--font-sans);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all .15s;
+  box-shadow: var(--shadow-sm);
+}
+
+.btn-caixa-servico {
+  background: var(--plum);
+  color: #fff;
+}
+
+.btn-caixa-servico:hover {
+  background: var(--noir);
+  box-shadow: var(--shadow-md);
+}
+
+.btn-caixa-produto {
+  background: var(--lavender);
+  color: var(--plum);
+  border: 1.5px solid var(--border-dark);
+}
+
+.btn-caixa-produto:hover {
+  background: var(--mauve);
+  box-shadow: var(--shadow-sm);
+}
+
+/* ── Correção: cores hardcoded nos arquivos JS ─────
+   Substitui var(--txt-white) em fundos claros e
+   color:#ffffff inline em custos.js e controle.js
+──────────────────────────────────────────────────── */
+.total-label-dark {
+  font-size: 12px;
+  color: var(--txt-muted);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .4px;
+}
+
+.total-value-serif {
+  font-family: var(--font-serif);
+  font-size: 28px;
+  font-weight: 600;
+  color: var(--noir);
+}
+
+/* ── Badge de agendamento inline ──────────────────
+   Substitui display:flex;align-items:center;gap:8px
+   no renderAgenda e no widget do dashboard
+──────────────────────────────────────────────────── */
+.agenda-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 13px;
+}
+
+.agenda-row:last-child { border-bottom: none; }
+
+.agenda-row-horario {
+  min-width: 52px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.agenda-row-cliente {
+  flex: 1;
+  font-weight: 500;
+  color: var(--txt-dark);
+}
+
+.agenda-row-servico {
+  font-size: 11px;
+  color: var(--txt-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 120px;
+}
+
+/* ── Seção de métricas avançadas (controle.js) ─────
+   Substitui o inline com rgba hardcoded na linha
+   separadora de métricas avançadas
+──────────────────────────────────────────────────── */
+.controle-secao-header td {
+  padding: 10px;
+  background: var(--ghost);
+  font-size: 11px;
+  color: var(--txt-muted);
+  letter-spacing: .5px;
+  text-transform: uppercase;
+  font-weight: 600;
+  text-align: center;
+}
+
+/* ── Responsivo — Fase 1 ─────────────────────────── */
+@media (max-width: 768px) {
+  .kpi-mini-grid {
+    display: flex;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    gap: 10px;
+  }
+  .kpi-mini-grid::-webkit-scrollbar { display: none; }
+  .kpi-mini-card {
+    min-width: 140px;
+    flex-shrink: 0;
+    scroll-snap-align: start;
+  }
+
+  .pgto-totals { gap: 8px; }
+  .pgto-total-item { min-width: 90px; padding: 8px 10px; }
+  .pgto-total-valor { font-size: 15px; }
+
+  .caixa-tab-btn { padding: 9px 14px; font-size: 13px; }
+
+  .btn-caixa-primary { min-width: 0; }
+  .input-cobrado { font-size: 18px !important; }
+}
