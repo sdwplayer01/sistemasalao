@@ -35,7 +35,7 @@ function checkOnboarding() {
     </div>
     <div class="onboarding-step">
       <div class="onboarding-num">3</div>
-      <div class="onboarding-txt"><strong>Receitas Internas</strong> — repasses e aluguel de cadeiras</div>
+      <div class="onboarding-txt"><strong>Receitas do Espaço</strong> — repasses e aluguel de cadeiras</div>
     </div>
     <div class="onboarding-step">
       <div class="onboarding-num">4</div>

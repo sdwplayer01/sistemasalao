@@ -9,7 +9,7 @@ import { R$, toast, openModal, closeModal, emptyState, applyMoneyMask } from '..
 let _abaAtiva = 'servicos'; // 'servicos' | 'produtos'
 
 export function renderServicos(container) {
-  const cfg  = Config.get();
+  const cfg = Config.get();
   const svcs = Servicos.getAll();
   const prods = Produtos.getAll();
   const cfPorCliente = Servicos.custoFixoPorClienteCalc(cfg);
@@ -104,7 +104,7 @@ function renderGridServicos(container, svcs, cfg, cfPorCliente) {
   }
 
   gridEl.innerHTML = `
-    <div class="table-wrap">
+    <div class="table-wrap mobile-reflow">
       <table>
         <thead>
           <tr>
@@ -123,24 +123,24 @@ function renderGridServicos(container, svcs, cfg, cfPorCliente) {
         </thead>
         <tbody>
           ${svcs.map(s => {
-            const p = Servicos.calcPrecos(s, cfg, cfPorCliente);
-            return `<tr>
-              <td class="fw-600">${s.nome}</td>
-              <td><span class="badge badge-plum">${s.categoria || '—'}</span></td>
-              <td class="td-center">${s.tempoMin || 0}min</td>
-              <td class="td-right td-mono">${R$(p.custoProduto)}</td>
-              <td class="td-right td-mono">${R$(p.custoTempo)}</td>
-              <td class="td-right td-mono">${R$(p.custoFixo)}</td>
-              <td class="td-right td-mono fw-600">${R$(p.custoTotal)}</td>
-              <td class="td-right td-mono" style="background:#FEE2E2;color:var(--txt-red);font-weight:600">${R$(p.precoMin)}</td>
-              <td class="td-right td-mono" style="background:var(--sage);color:var(--txt-green);font-weight:700">${R$(p.precoIdeal)}</td>
-              <td class="td-right td-mono" style="background:#FFF3CD;color:#856404;font-weight:600">${R$(p.precoPrem)}</td>
-              <td style="white-space:nowrap">
+    const p = Servicos.calcPrecos(s, cfg, cfPorCliente);
+    return `<tr>
+              <td data-label="Serviço" class="fw-600">${s.nome}</td>
+              <td data-label="Categoria"><span class="badge badge-plum">${s.categoria || '—'}</span></td>
+              <td data-label="Tempo" class="td-center">${s.tempoMin || 0}min</td>
+              <td data-label="C. Produto" class="td-right td-mono">${R$(p.custoProduto)}</td>
+              <td data-label="C. Tempo" class="td-right td-mono">${R$(p.custoTempo)}</td>
+              <td data-label="C. Fixo" class="td-right td-mono">${R$(p.custoFixo)}</td>
+              <td data-label="C. Total" class="td-right td-mono fw-600">${R$(p.custoTotal)}</td>
+              <td data-label="Mín" class="td-right td-mono" style="background:#FEE2E2;color:var(--txt-red);font-weight:600">${R$(p.precoMin)}</td>
+              <td data-label="Ideal" class="td-right td-mono" style="background:var(--sage);color:var(--txt-green);font-weight:700">${R$(p.precoIdeal)}</td>
+              <td data-label="Prem" class="td-right td-mono" style="background:#FFF3CD;color:#856404;font-weight:600">${R$(p.precoPrem)}</td>
+              <td class="td-actions">
                 <button class="btn btn-sm btn-secondary" data-edit-svc="${s.id}">✎</button>
                 <button class="btn btn-sm btn-danger" data-del-svc="${s.id}">×</button>
               </td>
             </tr>`;
-          }).join('')}
+  }).join('')}
         </tbody>
       </table>
     </div>
@@ -164,15 +164,15 @@ function renderGridServicos(container, svcs, cfg, cfPorCliente) {
 }
 
 function abrirFormSvc(svc, cfg, cfPorCliente, onSave) {
-  const s    = svc || {};
+  const s = svc || {};
   const cats = cfg.categorias || [];
-  const profs= cfg.profissionais || [];
+  const profs = cfg.profissionais || [];
 
   function calcPreview() {
     const tempo = parseFloat(document.getElementById('sv-tempo')?.value) || 0;
     const cprod = parseFloat(document.getElementById('sv-cprod')?.value) || 0;
-    const qtd   = parseFloat(document.getElementById('sv-qtd')?.value) || 0;
-    const cpu   = parseFloat(document.getElementById('sv-cpu')?.value) || 0;
+    const qtd = parseFloat(document.getElementById('sv-qtd')?.value) || 0;
+    const cpu = parseFloat(document.getElementById('sv-cpu')?.value) || 0;
     const custoProd = (qtd && cpu) ? qtd * cpu : cprod;
     const p = Servicos.calcPrecos({ tempoMin: tempo, custoProduto: custoProd }, cfg, cfPorCliente);
     const cprodCalc = document.getElementById('sv-cprod-calc');
@@ -199,14 +199,14 @@ function abrirFormSvc(svc, cfg, cfPorCliente, onSave) {
         <label>Categoria</label>
         <select id="sv-cat">
           <option value="">— Selecione —</option>
-          ${cats.map(c => `<option value="${c}" ${s.categoria===c?'selected':''}>${c}</option>`).join('')}
+          ${cats.map(c => `<option value="${c}" ${s.categoria === c ? 'selected' : ''}>${c}</option>`).join('')}
         </select>
       </div>
       <div class="form-group">
         <label>Profissional Padrão</label>
         <select id="sv-prof">
           <option value="">— Selecione —</option>
-          ${profs.map(p => `<option value="${p}" ${s.profissional===p?'selected':''}>${p}</option>`).join('')}
+          ${profs.map(p => `<option value="${p}" ${s.profissional === p ? 'selected' : ''}>${p}</option>`).join('')}
         </select>
       </div>
       <div class="form-group">
@@ -244,7 +244,7 @@ function abrirFormSvc(svc, cfg, cfPorCliente, onSave) {
 
   openModal(svc ? 'Editar Serviço' : 'Novo Serviço', body, footer);
 
-  ['sv-tempo','sv-cprod','sv-qtd','sv-cpu'].forEach(id => {
+  ['sv-tempo', 'sv-cprod', 'sv-qtd', 'sv-cpu'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.oninput = calcPreview;
   });
@@ -256,15 +256,15 @@ function abrirFormSvc(svc, cfg, cfPorCliente, onSave) {
     if (!nome) return toast('Informe o nome do serviço.', 'error');
     const data = {
       nome,
-      categoria:      document.getElementById('sv-cat').value,
-      profissional:   document.getElementById('sv-prof').value,
-      tempoMin:       parseFloat(document.getElementById('sv-tempo').value) || 0,
-      qtdProduto:     parseFloat(document.getElementById('sv-qtd').value) || 0,
-      custoPorUnidade:parseFloat(document.getElementById('sv-cpu').value) || 0,
-      custoProduto:   parseFloat(document.getElementById('sv-cprod').value) || 0,
+      categoria: document.getElementById('sv-cat').value,
+      profissional: document.getElementById('sv-prof').value,
+      tempoMin: parseFloat(document.getElementById('sv-tempo').value) || 0,
+      qtdProduto: parseFloat(document.getElementById('sv-qtd').value) || 0,
+      custoPorUnidade: parseFloat(document.getElementById('sv-cpu').value) || 0,
+      custoProduto: parseFloat(document.getElementById('sv-cprod').value) || 0,
     };
     if (svc) Servicos.update(svc.id, data);
-    else     Servicos.add(data);
+    else Servicos.add(data);
     closeModal();
     toast(svc ? 'Serviço atualizado! ✓' : 'Serviço adicionado! ✓', 'success');
     onSave();
@@ -284,7 +284,7 @@ function renderGridProdutos(container, prods, cfg) {
   }
 
   gridEl.innerHTML = `
-    <div class="table-wrap">
+    <div class="table-wrap mobile-reflow">
       <table>
         <thead>
           <tr>
@@ -301,34 +301,34 @@ function renderGridProdutos(container, prods, cfg) {
         </thead>
         <tbody>
           ${prods.map(p => {
-            const custo     = parseFloat(p.custoProd) || 0;
-            const preco     = parseFloat(p.precoVenda) || 0;
-            const margem    = preco > 0 ? (preco - custo) / preco : 0;
-            const estoque   = parseFloat(p.estoque) || 0;
-            const estoqMin  = parseFloat(p.estoqueMin) ?? 2;
-            const isLow     = estoque <= estoqMin;
-            return `<tr style="${isLow ? 'background:rgba(240,138,138,.07)' : ''}">
-              <td><span class="badge badge-plum" style="font-family:monospace;font-size:11px">${p.sku || '—'}</span></td>
-              <td class="fw-600">
+    const custo = parseFloat(p.custoProd) || 0;
+    const preco = parseFloat(p.precoVenda) || 0;
+    const margem = preco > 0 ? (preco - custo) / preco : 0;
+    const estoque = parseFloat(p.estoque) || 0;
+    const estoqMin = parseFloat(p.estoqueMin) ?? 2;
+    const isLow = estoque <= estoqMin;
+    return `<tr style="${isLow ? 'background:rgba(240,138,138,.07)' : ''}">
+              <td data-label="SKU"><span class="badge badge-plum" style="font-family:monospace;font-size:11px">${p.sku || '—'}</span></td>
+              <td data-label="Produto" class="fw-600">
                 ${p.nome}
                 ${isLow ? '<span class="badge badge-warn" style="margin-left:6px;font-size:10px">⚠ Baixo</span>' : ''}
               </td>
-              <td><span class="badge" style="background:var(--lavender);color:var(--plum-light);font-size:10px">${p.categoria || '—'}</span></td>
-              <td class="td-right td-mono">${R$(custo)}</td>
-              <td class="td-right td-mono fw-600" style="color:var(--txt-green)">${R$(preco)}</td>
-              <td class="td-right td-mono" style="color:${margem >= 0.3 ? 'var(--txt-green)' : margem >= 0.1 ? '#F0D58A' : 'var(--txt-red)'}">
+              <td data-label="Categoria"><span class="badge" style="background:var(--lavender);color:var(--plum-light);font-size:10px">${p.categoria || '—'}</span></td>
+              <td data-label="Custo" class="td-right td-mono">${R$(custo)}</td>
+              <td data-label="Preço" class="td-right td-mono fw-600" style="color:var(--txt-green)">${R$(preco)}</td>
+              <td data-label="Margem" class="td-right td-mono" style="color:${margem >= 0.3 ? 'var(--txt-green)' : margem >= 0.1 ? '#F0D58A' : 'var(--txt-red)'}">
                 ${(margem * 100).toFixed(1)}%
               </td>
-              <td class="td-center td-mono fw-600" style="color:${isLow ? 'var(--txt-red)' : 'var(--txt-dark)'}">
+              <td data-label="Estoque" class="td-center td-mono fw-600" style="color:${isLow ? 'var(--txt-red)' : 'var(--txt-dark)'}">
                 ${estoque}
               </td>
-              <td class="td-center td-mono text-muted">${estoqMin}</td>
-              <td style="white-space:nowrap">
+              <td data-label="Mínimo" class="td-center td-mono text-muted">${estoqMin}</td>
+              <td class="td-actions">
                 <button class="btn btn-sm btn-secondary" data-edit-prod="${p.id}">✎</button>
                 <button class="btn btn-sm btn-danger" data-del-prod="${p.id}">×</button>
               </td>
             </tr>`;
-          }).join('')}
+  }).join('')}
         </tbody>
       </table>
     </div>
@@ -352,7 +352,7 @@ function renderGridProdutos(container, prods, cfg) {
 }
 
 function abrirFormProd(prod, cfg, onSave) {
-  const p    = prod || {};
+  const p = prod || {};
   const cats = cfg.categorias || [];
   const isEdit = !!prod;
 
@@ -377,7 +377,7 @@ function abrirFormProd(prod, cfg, onSave) {
         <label>Categoria</label>
         <select id="pd-cat">
           <option value="">— Selecione —</option>
-          ${cats.map(c => `<option value="${c}" ${p.categoria===c?'selected':''}>${c}</option>`).join('')}
+          ${cats.map(c => `<option value="${c}" ${p.categoria === c ? 'selected' : ''}>${c}</option>`).join('')}
         </select>
       </div>
       <div class="form-group"></div>
@@ -414,7 +414,7 @@ function abrirFormProd(prod, cfg, onSave) {
   function calcMargem() {
     const custo = parseFloat(document.getElementById('pd-custo')?.value) || 0;
     const preco = parseFloat(document.getElementById('pd-preco')?.value) || 0;
-    const prev  = document.getElementById('pd-preview');
+    const prev = document.getElementById('pd-preview');
     if (!prev) return;
     if (preco > 0) {
       const margem = preco > 0 ? (preco - custo) / preco : 0;
@@ -422,7 +422,7 @@ function abrirFormProd(prod, cfg, onSave) {
       prev.innerHTML = `
         <div style="display:flex;gap:16px;padding:10px 14px;background:var(--bg-soft);border-radius:var(--radius);font-size:13px">
           <span>Lucro/un.: <strong style="color:${cor}">${R$(preco - custo)}</strong></span>
-          <span>Margem: <strong style="color:${cor}">${(margem*100).toFixed(1)}%</strong></span>
+          <span>Margem: <strong style="color:${cor}">${(margem * 100).toFixed(1)}%</strong></span>
         </div>`;
     } else {
       prev.innerHTML = '';
@@ -441,11 +441,11 @@ function abrirFormProd(prod, cfg, onSave) {
 
     const data = {
       nome,
-      categoria:   document.getElementById('pd-cat').value,
-      custoProd:   parseFloat(document.getElementById('pd-custo').value) || 0,
-      precoVenda:  preco,
-      estoque:     parseFloat(document.getElementById('pd-estoque').value) || 0,
-      estoqueMin:  parseFloat(document.getElementById('pd-estoque-min').value) ?? 2,
+      categoria: document.getElementById('pd-cat').value,
+      custoProd: parseFloat(document.getElementById('pd-custo').value) || 0,
+      precoVenda: preco,
+      estoque: parseFloat(document.getElementById('pd-estoque').value) || 0,
+      estoqueMin: parseFloat(document.getElementById('pd-estoque-min').value) ?? 2,
     };
 
     if (isEdit) {

@@ -182,7 +182,7 @@ function salvarConfig() {
     formasPagamento: [...document.querySelectorAll('.pgto-input')].map(i => i.value.trim()).filter(Boolean),
   };
   Config.save(cfg);
-  const el = document.getElementById('sidebarNomeSalao');
+  const el = document.getElementById('topBarNomeSalao');
   if (el) el.textContent = cfg.nomeSalao;
   toast('Configurações salvas! ✓', 'success');
 }
