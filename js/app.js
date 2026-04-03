@@ -74,8 +74,8 @@ export function navigateTo(page) {
 
     if (navEl) navEl.classList.add('active')
 
-    const titleEl = document.getElementById('topBarTitle')
-    if (titleEl) titleEl.textContent = PAGES[page].title
+    // const titleEl = document.getElementById('topBarTitle')
+    // if (titleEl) titleEl.textContent = PAGES[page].title
 
     _paginaAtual = page
     // Item 2: persiste a última página visitada
@@ -112,8 +112,10 @@ function initApp(user) {
 
   const cfg = Config.get()
 
-  const nomeSalaoEl = document.getElementById('sidebarNomeSalao')
-  if (nomeSalaoEl) nomeSalaoEl.textContent = cfg.nomeSalao || 'Meu Salão'
+  // const nomeSalaoEl = document.getElementById('sidebarNomeSalao')
+  // if (nomeSalaoEl) nomeSalaoEl.textContent = cfg.nomeSalao || 'Meu Salão'
+  const topBarNomeSalaoElement = document.getElementById('topBarNomeSalao');
+  if (topBarNomeSalaoElement) topBarNomeSalaoElement.textContent = cfg.nomeSalao || 'Salão Premium';
 
   const userEmailEl = document.getElementById('userEmail')
   if (userEmailEl) userEmailEl.textContent = user.email || ''

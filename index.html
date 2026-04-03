@@ -7,8 +7,8 @@
   <link rel="stylesheet" href="css/style.css" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600&family=Inter:wght@300;400;500;600&display=swap" />
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600&family=Inter:wght@300;400;500;600&family=Playfair+Display:wght@400;700&display=swap" />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600&family=Inter:wght@300;400;500;600&family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet" />
   <!-- Lucide Icons (v2.3) — ícones vetoriais leves -->
   <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
 </head>
@@ -23,11 +23,7 @@
     <!-- SIDEBAR -->
     <aside class="sidebar" id="sidebar">
       <div class="sidebar-brand">
-        <button class="btn-menu" id="btnMenu" style="background:none;border:none;color:var(--txt-white);font-size:24px;cursor:pointer;padding:0;display:flex;align-items:center;justify-content:center"><i data-lucide="menu"></i></button>
-        <div class="brand-text">
-          <span class="brand-name" id="sidebarNomeSalao">Salão Premium</span>
-          <span class="brand-sub">Gestão Inteligente</span>
-        </div>
+        <button class="btn-menu" id="btnMenu" style="background:none;border:none;color:var(--txt-white);font-size:24px;cursor:pointer;display:flex;align-items:center;justify-content:center"><i data-lucide="menu"></i></button>
       </div>
 
       <nav class="sidebar-nav">
@@ -83,7 +79,10 @@
     <main class="main-content">
       <div class="top-bar">
         <button class="btn-menu-mobile" id="btnMenuMobile" style="background:none;border:none;color:var(--plum-light);font-size:24px;cursor:pointer;display:none;padding:0"><i data-lucide="menu"></i></button>
-        <div class="top-bar-title" id="topBarTitle">Dashboard</div>
+        <div id="topBarTitle">
+          <span id="topBarNomeSalao" class="brand-name">Nome do Salão Padrão</span>
+          <span class="brand-tagline">GESTÃO INTELIGENTE</span>
+        </div>
         <div class="top-bar-right">
           <span class="badge-mes" id="badgeMes"></span>
         </div>

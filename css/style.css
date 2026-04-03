@@ -148,8 +148,9 @@ body {
 /* ── SIDEBAR ──────────────────────────────────── */
 .sidebar {
   width: var(--sidebar-w);
-  top: 0; bottom: 0;
-  height: 100vh;
+  top: 54px;
+  bottom: 0;
+  padding-top: 10px;
   background: var(--sidebar-bg);
   border-right: 1px solid var(--sidebar-border);
   display: flex;
@@ -184,10 +185,10 @@ body {
 }
 
 .sidebar-brand {
+  padding: 0;
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 18px 16px 14px;
+  justify-content: center;
   border-bottom: 1px solid var(--sidebar-border);
 }
 
@@ -195,6 +196,8 @@ body {
   flex-shrink: 0;
   transition: transform .15s;
   color: var(--plum-mid) !important;
+  margin: 0;
+  padding: 5px;
 }
 .btn-menu:hover { transform: scale(1.1); }
 .btn-menu svg { width: 22px; height: 22px; stroke-width: 2; }
@@ -202,21 +205,25 @@ body {
 .brand-text { display: flex; flex-direction: column; }
 
 .brand-name {
-  font-family: var(--font-serif);
-  font-size: 15px;
-  font-weight: 600;
-  color: var(--brand-name-color);
-  letter-spacing: .3px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  font-family: 'Playfair Display', serif;
+  font-size: 18px;
+  color: rgb(79, 73, 91);
+  display: block;
+  line-height: 1.2;
 }
 
-.brand-sub {
-  font-size: 10px;
-  color: var(--plum-mid);
-  letter-spacing: .8px;
+.brand-tagline {
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 11px;
+  color: rgb(161, 137, 182);
   text-transform: uppercase;
+  display: block;
+  line-height: 1.2;
+}
+
+#topBarTitle {
+  flex-grow: 1;
+  flex-shrink: 1;
 }
 
 .sidebar-nav {
@@ -315,7 +322,7 @@ body {
   gap: 16px;
   position: sticky;
   top: 0;
-  z-index: 50;
+  z-index: 110;
   box-shadow: var(--shadow-sm);
 }
 
@@ -324,13 +331,7 @@ body {
 }
 .btn-menu-mobile svg { width: 22px; height: 22px; }
 
-.top-bar-title {
-  font-family: var(--font-serif);
-  font-size: 20px;
-  font-weight: 600;
-  color: var(--noir);
-  flex: 1;
-}
+/* .top-bar-title foi substituído por #topBarTitle */
 
 .badge-mes {
   font-size: 11px;
@@ -406,8 +407,9 @@ body {
 }
 
 .kpi-label {
-  font-size: 11px;
-  color: var(--txt-muted);
+  font-weight: 600;
+  color: rgb(70, 60, 80);
+  font-size: 12px;
   text-transform: uppercase;
   letter-spacing: .5px;
   margin-bottom: 5px;
