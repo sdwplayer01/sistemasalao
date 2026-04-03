@@ -53,38 +53,50 @@ loadTheme()
 // ── Navegação ──────────────────────────────────────────
 export function navigateTo(page) {
   if (!PAGES[page]) { page = 'dashboard' }
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'))
-  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'))
 
-  const pageEl = document.getElementById(`page-${page}`)
-  const navEl  = document.querySelector(`[data-page="${page}"]`)
+  const performNav = () => {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'))
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'))
 
-  if (pageEl) {
-    pageEl.classList.add('active')
-    // Placeholder leve em vez de texto
-    pageEl.innerHTML = `<div style="display:flex;align-items:center;justify-content:center;padding:60px;gap:10px;color:var(--txt-muted)">
-      <i data-lucide="loader-2" style="width:18px;height:18px;animation:spin .8s linear infinite"></i>
-      Carregando...
-    </div>`
-    PAGES[page].render(pageEl)
-    initIcons()
+    const pageEl = document.getElementById(`page-${page}`)
+    const navEl  = document.querySelector(`[data-page="${page}"]`)
+
+    if (pageEl) {
+      pageEl.classList.add('active')
+      // Placeholder leve em vez de texto
+      pageEl.innerHTML = `<div style="display:flex;align-items:center;justify-content:center;padding:60px;gap:10px;color:var(--txt-muted)">
+        <i data-lucide="loader-2" style="width:18px;height:18px;animation:spin .8s linear infinite"></i>
+        Carregando...
+      </div>`
+      PAGES[page].render(pageEl)
+      initIcons()
+    }
+
+    if (navEl) navEl.classList.add('active')
+
+    const titleEl = document.getElementById('topBarTitle')
+    if (titleEl) titleEl.textContent = PAGES[page].title
+
+    _paginaAtual = page
+    // Item 2: persiste a última página visitada
+    localStorage.setItem('salao_last_page', page)
+
+    // Mobile: fecha sidebar
+    if (window.innerWidth <= 768) {
+      const sb = document.getElementById('sidebar');
+      if (sb) sb.classList.remove('open');
+    }
   }
 
-  if (navEl) navEl.classList.add('active')
-
-  const titleEl = document.getElementById('topBarTitle')
-  if (titleEl) titleEl.textContent = PAGES[page].title
-
-  _paginaAtual = page
-  // Item 2: persiste a última página visitada
-  localStorage.setItem('salao_last_page', page)
-
-  // Mobile: fecha sidebar
-  if (window.innerWidth <= 768) document.getElementById('sidebar').classList.remove('open')
+  if (document.startViewTransition) {
+    document.startViewTransition(() => performNav())
+  } else {
+    performNav()
+  }
 }
 
 // ── show/hide ──────────────────────────────────────────
-function showApp()   { document.getElementById('page-login').style.display = 'none';  document.getElementById('app-shell').style.display = '' }
+function showApp()   { document.getElementById('page-login').style.display = 'none';  document.getElementById('app-shell').style.display = 'flex' }
 function showLogin() { document.getElementById('app-shell').style.display  = 'none'; document.getElementById('page-login').style.display = '' }
 
 // ── Init do app (pós-login) — INSTANT BOOT ────────────

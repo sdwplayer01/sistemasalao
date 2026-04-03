@@ -111,7 +111,8 @@
 }
 
 [data-theme="dark"] body {
-  background:
+  background-color: #121212;
+  background-image:
     linear-gradient(rgba(10,6,18,.88), rgba(10,6,18,.90)),
     url('https://raw.githubusercontent.com/sdwplayer01/sistemasalao_v2/refs/heads/main/ChatGPT%20Image%2030%20de%20mar.%20de%202025%2C%2001_33_31.png');
   background-size: cover;
@@ -122,11 +123,12 @@
 /* ── RESET & BASE ─────────────────────────────── */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-html, body { width: 100%; min-height: 100vh; }
+html { width: 100%; min-height: 100vh; background-color: var(--bg); }
 
 body {
+  width: 100%; min-height: 100vh;
   font-family: var(--font-sans);
-  background: var(--bg);
+  background-color: var(--bg);
   color: var(--txt-dark);
   display: flex;
   font-size: 14px;
@@ -134,16 +136,26 @@ body {
   transition: background .25s, color .25s;
 }
 
+/* ── APP SHELL ──────────────────────────────────── */
+#app-shell {
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+  min-height: 100vh;
+  background-color: transparent;
+}
+
 /* ── SIDEBAR ──────────────────────────────────── */
 .sidebar {
   width: var(--sidebar-w);
-  min-height: 100vh;
+  top: 0; bottom: 0;
+  height: 100vh;
   background: var(--sidebar-bg);
   border-right: 1px solid var(--sidebar-border);
   display: flex;
   flex-direction: column;
   position: fixed;
-  top: 0; left: 0;
+  left: 0;
   z-index: 100;
   transition: width .25s ease, transform .25s ease;
   overflow-x: hidden;
