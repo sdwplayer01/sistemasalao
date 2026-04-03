@@ -26,7 +26,7 @@ const PAGES = {
   diario:       { render: renderDiario,       title: 'Diário / Caixa' },
   servicos:     { render: renderServicos,     title: 'Serviços & Produtos' },
   custos:       { render: renderCustos,       title: 'Custos Fixos' },
-  receitas:     { render: renderReceitas,     title: 'Receitas Internas' },
+  receitas:     { render: renderReceitas,     title: 'Receitas do Espaço' },
   controle:     { render: renderControle,     title: 'Controle Anual' },
   clientes:     { render: renderClientes,     title: 'CRM de Clientes' },
   configuracoes:{ render: renderConfiguracoes, title: 'Configurações' },
@@ -52,7 +52,7 @@ loadTheme()
 
 // ── Navegação ──────────────────────────────────────────
 export function navigateTo(page) {
-  if (!PAGES[page]) return
+  if (!PAGES[page]) { page = 'dashboard' }
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'))
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'))
 
@@ -76,6 +76,8 @@ export function navigateTo(page) {
   if (titleEl) titleEl.textContent = PAGES[page].title
 
   _paginaAtual = page
+  // Item 2: persiste a última página visitada
+  localStorage.setItem('salao_last_page', page)
 
   // Mobile: fecha sidebar
   if (window.innerWidth <= 768) document.getElementById('sidebar').classList.remove('open')
@@ -110,8 +112,9 @@ function initApp(user) {
     badgeEl.textContent = `${MESES[now.getMonth()]} ${now.getFullYear()}`
   }
 
-  // 2. Render imediato do Dashboard com dados do localStorage
-  navigateTo('dashboard')
+  // 2. Restaura última página visitada (Item 2 — persistência)
+  const _ultimaPagina = localStorage.getItem('salao_last_page') || 'dashboard'
+  navigateTo(PAGES[_ultimaPagina] ? _ultimaPagina : 'dashboard')
 
   // 3. Sync com Supabase em background — NÃO bloqueia a tela
   _syncBackground()
@@ -124,15 +127,21 @@ function initApp(user) {
   // ── Sidebar: collapse (desktop) e open (mobile) ────
   const sidebar = document.getElementById('sidebar')
 
-  if (localStorage.getItem('sidebarCollapsed') === 'true') {
+  // Item 1: collapsed só funciona no desktop
+  if (window.innerWidth > 768 && localStorage.getItem('sidebarCollapsed') === 'true') {
     sidebar.classList.add('collapsed')
   }
 
   const btnMenu = document.getElementById('btnMenu')
   if (btnMenu) {
     btnMenu.onclick = () => {
-      sidebar.classList.toggle('collapsed')
-      localStorage.setItem('sidebarCollapsed', sidebar.classList.contains('collapsed'))
+      // Item 1: collapsed só no desktop; mobile usa open/close
+      if (window.innerWidth > 768) {
+        sidebar.classList.toggle('collapsed')
+        localStorage.setItem('sidebarCollapsed', sidebar.classList.contains('collapsed'))
+      } else {
+        sidebar.classList.toggle('open')
+      }
     }
   }
 

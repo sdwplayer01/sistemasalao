@@ -166,7 +166,10 @@ body {
 .sidebar.collapsed #btnLogout,
 .sidebar.collapsed #fileImport   { display: none !important; }
 .sidebar.collapsed .sidebar-footer { padding: 8px; border-top: none; }
-.sidebar.collapsed ~ .main-content { margin-left: var(--sidebar-w-collapsed); }
+/* Item 1: collapsed só no desktop — no mobile o margin já é 0 via !important */
+@media (min-width: 769px) {
+  .sidebar.collapsed ~ .main-content { margin-left: var(--sidebar-w-collapsed); }
+}
 
 .sidebar-brand {
   display: flex;
@@ -1089,8 +1092,19 @@ textarea { resize: vertical; min-height: 70px; }
 
 /* ── RESPONSIVE ───────────────────────────────── */
 @media (max-width: 768px) {
+  /* Item 1: no mobile, sidebar nunca é collapsed — só open/closed */
   .sidebar { transform: translateX(-100%); }
   .sidebar.open { transform: translateX(0); box-shadow: var(--shadow-lg); }
+  /* collapsed no mobile não deve aplicar largura reduzida */
+  .sidebar.collapsed { width: var(--sidebar-w) !important; }
+  .sidebar.collapsed .brand-text,
+  .sidebar.collapsed .menu-text { display: flex !important; }
+  .sidebar.collapsed .nav-item  { justify-content: flex-start !important; padding: 9px 12px !important; gap: 10px !important; }
+  .sidebar.collapsed .sidebar-footer span,
+  .sidebar.collapsed .btn-export,
+  .sidebar.collapsed .btn-import,
+  .sidebar.collapsed #userEmail,
+  .sidebar.collapsed #btnLogout { display: flex !important; }
   .main-content { margin-left: 0 !important; }
   .btn-menu-mobile { display: block !important; }
   .btn-menu { display: none; }
@@ -1105,6 +1119,68 @@ textarea { resize: vertical; min-height: 70px; }
 @media (max-width: 480px) {
   .form-grid.cols-2 { grid-template-columns: 1fr; }
   .kpi-card { min-width: 150px; }
+}
+
+
+/* ══════════════════════════════════════════════════════
+   ITEM 3 — Responsive Table Reflow (mobile)
+   Uso: adicione classe .mobile-reflow no .table-wrap
+   das tabelas de Agenda e Caixa.
+   No mobile, cada linha vira um card com label:valor.
+   No desktop, tabela normal sem mudança.
+══════════════════════════════════════════════════════ */
+@media (max-width: 640px) {
+  .table-wrap.mobile-reflow { border: none; box-shadow: none; overflow: visible; }
+  .table-wrap.mobile-reflow table  { display: block; }
+  .table-wrap.mobile-reflow thead  { display: none; } /* oculta cabeçalho */
+  .table-wrap.mobile-reflow tbody  { display: flex; flex-direction: column; gap: 10px; }
+  .table-wrap.mobile-reflow tr {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4px 12px;
+    background: var(--bg-card);
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border);
+    padding: 12px 14px;
+    box-shadow: var(--shadow-sm);
+  }
+  .table-wrap.mobile-reflow td {
+    display: flex;
+    flex-direction: column;
+    padding: 3px 0;
+    font-size: 13px;
+    border: none;
+  }
+  /* Label acima do valor — puxado do atributo data-label */
+  .table-wrap.mobile-reflow td::before {
+    content: attr(data-label);
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .4px;
+    color: var(--txt-muted);
+    margin-bottom: 2px;
+  }
+  /* Células sem label (ações, ícones) ficam em linha inteira */
+  .table-wrap.mobile-reflow td.td-actions {
+    grid-column: 1 / -1;
+    flex-direction: row;
+    justify-content: flex-end;
+    gap: 6px;
+    padding-top: 8px;
+    border-top: 1px solid var(--border);
+    margin-top: 4px;
+  }
+  /* Zebra: aplica no card, não na linha */
+  .table-wrap.mobile-reflow tbody tr:nth-child(even) {
+    background: var(--cream);
+  }
+  /* Row-total vira card de destaque */
+  .table-wrap.mobile-reflow tr.row-total {
+    background: var(--mauve);
+    border-color: var(--border-dark);
+    grid-column: 1 / -1;
+  }
 }
 
 /* ── UTILITIES ────────────────────────────────── */
@@ -1125,6 +1201,89 @@ textarea { resize: vertical; min-height: 70px; }
 .fw-600      { font-weight: 600; }
 .font-serif  { font-family: var(--font-serif); }
 .w-full      { width: 100%; }
+
+
+/* ══════════════════════════════════════════════════════
+   ITEM 4 — Layout de Caixa: duas colunas no desktop
+   A coluna direita fica com o painel de resumo.
+   No mobile, empilha normalmente (1 coluna).
+══════════════════════════════════════════════════════ */
+.caixa-layout-desktop {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+}
+
+@media (min-width: 1024px) {
+  .caixa-layout-desktop {
+    grid-template-columns: 1fr 300px;
+    align-items: start;
+  }
+  .caixa-col-principal { min-width: 0; } /* evita overflow em grids */
+  .caixa-col-lateral   { position: sticky; top: calc(var(--topbar-h) + 16px); }
+}
+
+/* Painel lateral da Caixa */
+.caixa-painel-lateral {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.caixa-resumo-lateral {
+  background: var(--bg-card);
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  padding: 16px;
+  box-shadow: var(--shadow-sm);
+}
+
+.caixa-resumo-lateral-titulo {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .5px;
+  color: var(--txt-muted);
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.caixa-total-dia {
+  font-family: var(--font-serif);
+  font-size: 32px;
+  font-weight: 700;
+  color: var(--txt-green);
+  line-height: 1;
+  margin-bottom: 4px;
+}
+
+.caixa-total-dia-sub {
+  font-size: 12px;
+  color: var(--txt-muted);
+  margin-bottom: 16px;
+}
+
+/* Linha de split por forma de pagamento no painel lateral */
+.caixa-pgto-linha {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 13px;
+}
+.caixa-pgto-linha:last-child { border-bottom: none; }
+.caixa-pgto-nome  { color: var(--txt-muted); }
+.caixa-pgto-valor { font-weight: 600; color: var(--noir); }
+
+@media (max-width: 1023px) {
+  /* No mobile/tablet, painel lateral vira rodapé compacto */
+  .caixa-col-lateral { order: -1; } /* aparece antes da tabela no mobile */
+  .caixa-resumo-lateral { padding: 12px; }
+  .caixa-total-dia { font-size: 24px; }
+}
 
 /* Scrollbar */
 ::-webkit-scrollbar { width: 5px; height: 5px; }
@@ -1547,4 +1706,67 @@ textarea { resize: vertical; min-height: 70px; }
 
   .btn-caixa-primary { min-width: 0; }
   .input-cobrado { font-size: 18px !important; }
+}
+
+/* ══════════════════════════════════════════════════════
+   ITEM 6 — CRM: filtros de segmento e badges
+══════════════════════════════════════════════════════ */
+
+/* Barra de filtros rápidos */
+.crm-segmentos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 4px;
+}
+
+.crm-seg-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: 20px;
+  border: 1.5px solid var(--border-dark);
+  background: var(--bg-card);
+  color: var(--txt-muted);
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all .15s;
+}
+
+.crm-seg-btn:hover {
+  border-color: var(--plum-mid);
+  color: var(--plum);
+  background: var(--lavender);
+}
+
+.crm-seg-btn.active {
+  font-weight: 600;
+  border-color: currentColor;
+}
+
+/* Cores por segmento */
+.crm-seg-btn.fiel.active    { background: var(--sage);     color: var(--txt-green); border-color: #4CAF50; }
+.crm-seg-btn.nova.active    { background: #EEF3FC;          color: #1A4FA0;          border-color: #1A4FA0; }
+.crm-seg-btn.regular.active { background: var(--lavender);  color: var(--plum);      border-color: var(--plum); }
+.crm-seg-btn.ausente.active { background: #FEF3C7;          color: #92400E;          border-color: #D97706; }
+.crm-seg-btn.inativa.active { background: #FEE2E2;          color: var(--txt-red);   border-color: #EF4444; }
+
+/* Badge de contagem */
+.crm-seg-count {
+  background: rgba(0,0,0,.08);
+  border-radius: 20px;
+  padding: 1px 7px;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+/* Badge blue (faltava no sistema) */
+.badge-blue { background: #EEF3FC; color: #1A4FA0; }
+
+@media (max-width: 640px) {
+  .crm-segmentos { gap: 4px; }
+  .crm-seg-btn   { padding: 5px 10px; font-size: 11px; }
 }

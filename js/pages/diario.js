@@ -106,16 +106,18 @@ function renderTabHoje(svcs, prods, profs, formas, cfg) {
   const fatProd  = entries.filter(e => e.tipo==='produto')
                           .reduce((s,e) => s+(parseFloat(e.precoCobrado)||0)*(parseInt(e.qtd)||1), 0);
 
+  // Item 4: layout duas colunas no desktop via CSS grid (.caixa-layout-desktop)
+  // A coluna direita tem painel lateral fixo com resumo e totais por pgto.
   el.innerHTML = `
-    <!-- Mini-resumo do dia -->
+    <!-- Mini-resumo: carrossel no mobile, grid no desktop -->
     ${resumoCards([
-      { label: 'Caixa Hoje',   value: R$(fat),   cor: 'green', sub: `${atend} atendimento${atend!==1?'s':''}` },
-      { label: 'Serviços',     value: R$(fatSvc), cor: 'plum'  },
-      { label: 'Produtos',     value: R$(fatProd),cor: 'rose'  },
-      { label: 'Lançamentos',  value: entries.length, cor: 'blue' },
+      { label: 'Caixa Hoje',  value: R$(fat),        cor: 'green', sub: \`\${atend} atendimento\${atend!==1?'s':''}\` },
+      { label: 'Serviços',    value: R$(fatSvc),      cor: 'plum'  },
+      { label: 'Produtos',    value: R$(fatProd),     cor: 'rose'  },
+      { label: 'Lançamentos', value: entries.length,  cor: 'blue'  },
     ])}
 
-    <!-- Botões de ação principais -->
+    <!-- Botões de ação -->
     <div class="caixa-actions">
       <button class="btn-caixa-primary btn-caixa-servico" id="btnNovoServico">
         <i data-lucide="scissors" style="width:18px;height:18px"></i>
@@ -127,11 +129,65 @@ function renderTabHoje(svcs, prods, profs, formas, cfg) {
       </button>
     </div>
 
-    <!-- Tabela compacta de lançamentos de hoje -->
-    <div id="tabelaHoje"></div>
+    <!-- Grade duas colunas no desktop (CSS grid) -->
+    <div class="caixa-layout-desktop">
 
-    <!-- Rodapé: totais por forma de pagamento -->
-    ${pgtoTotalsBar(entries)}
+      <!-- Coluna principal: tabela -->
+      <div class="caixa-col-principal">
+        <div id="tabelaHoje"></div>
+      </div>
+
+      <!-- Coluna lateral: painel de resumo financeiro -->
+      <div class="caixa-col-lateral">
+        <div class="caixa-painel-lateral">
+
+          <!-- Total do dia -->
+          <div class="caixa-resumo-lateral">
+            <div class="caixa-resumo-lateral-titulo">
+              <i data-lucide="banknote" style="width:13px;height:13px"></i>
+              Total do Dia
+            </div>
+            <div class="caixa-total-dia">${R$(fat)}</div>
+            <div class="caixa-total-dia-sub">${atend} atendimento${atend!==1?'s':''} registrado${atend!==1?'s':''}</div>
+
+            <!-- Split serviços / produtos -->
+            ${fatSvc > 0 ? \`<div class="caixa-pgto-linha">
+              <span class="caixa-pgto-nome">Serviços</span>
+              <span class="caixa-pgto-valor">\${R$(fatSvc)}</span>
+            </div>\` : ''}
+            ${fatProd > 0 ? \`<div class="caixa-pgto-linha">
+              <span class="caixa-pgto-nome">Produtos</span>
+              <span class="caixa-pgto-valor">\${R$(fatProd)}</span>
+            </div>\` : ''}
+          </div>
+
+          <!-- Totais por forma de pagamento -->
+          ${(() => {
+            if (!entries.length) return '';
+            const totaisPgto = {};
+            entries.forEach(e => {
+              const forma = e.formaPagamento || 'Sem forma';
+              const val   = (parseFloat(e.precoCobrado)||0) * (parseInt(e.qtd)||1);
+              totaisPgto[forma] = (totaisPgto[forma]||0) + val;
+            });
+            if (!Object.keys(totaisPgto).length) return '';
+            return \`<div class="caixa-resumo-lateral">
+              <div class="caixa-resumo-lateral-titulo">
+                <i data-lucide="credit-card" style="width:13px;height:13px"></i>
+                Por Forma de Pagamento
+              </div>
+              \${Object.entries(totaisPgto).sort((a,b)=>b[1]-a[1]).map(([forma,val]) => \`
+                <div class="caixa-pgto-linha">
+                  <span class="caixa-pgto-nome">\${forma}</span>
+                  <span class="caixa-pgto-valor">\${R$(val)}</span>
+                </div>\`).join('')}
+            </div>\`;
+          })()}
+
+        </div>
+      </div>
+
+    </div><!-- /caixa-layout-desktop -->
   `;
 
   document.getElementById('btnNovoServico').onclick = () =>

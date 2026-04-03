@@ -1,4 +1,3 @@
-import * as UI from '../ui.js';
 // ═══════════════════════════════════════════════════════
 // pages/receitas.js
 // ═══════════════════════════════════════════════════════
@@ -11,8 +10,8 @@ export function renderReceitas(container) {
   const mesAtual = new Date().getMonth();
 
   container.innerHTML = `
-    <div class="section-title">Receitas Internas</div>
-    <div class="section-sub">Repasses, aluguel de cadeiras e comissões que abatam o custo fixo.</div>
+    <div class="section-title">Receitas do Espaço</div>
+    <div class="section-sub">Valores recebidos de terceiros que usam seu espaço — reduzem seu custo fixo mensal para precificação.</div>
 
     <div class="action-bar">
       <label style="font-weight:500;color:var(--txt-muted);font-size:13px">Mês:</label>
@@ -55,7 +54,7 @@ function renderForm(ano, mesIdx) {
   formEl.innerHTML = `
     <div class="card">
       <div class="card-header">
-        <span class="card-title">Receitas — ${MESES[mesIdx]}</span>
+        <span class="card-title">Receitas do Espaço — ${MESES[mesIdx]}</span>
         <span class="badge badge-green">${R$(totalRec)}</span>
       </div>
       <div class="card-body">
