@@ -1,4 +1,3 @@
-import * as UI from '../ui.js';
 // ═══════════════════════════════════════════════════════
 // pages/configuracoes.js
 // ═══════════════════════════════════════════════════════
@@ -61,8 +60,8 @@ export function renderConfiguracoes(container) {
           <div class="form-group">
             <label>Mês de Referência para Custo Fixo</label>
             <select id="cfg-mes-cf">
-              <option value="-1" ${(cfg.mesCustoFixo??-1)==-1?'selected':''}>Média de todos os meses</option>
-              ${MESES.map((m,i)=>`<option value="${i}" ${cfg.mesCustoFixo==i?'selected':''}>${m}</option>`).join('')}
+              <option value="-1" ${(cfg.mesCustoFixo ?? -1) == -1 ? 'selected' : ''}>Média de todos os meses</option>
+              ${MESES.map((m, i) => `<option value="${i}" ${cfg.mesCustoFixo == i ? 'selected' : ''}>${m}</option>`).join('')}
             </select>
           </div>
           <div class="form-group">
@@ -86,7 +85,7 @@ export function renderConfiguracoes(container) {
       <div class="card-header"><span class="card-title">👩 Profissionais</span></div>
       <div class="card-body">
         <div id="profLista">
-          ${(cfg.profissionais || []).map((p,i) => itemRow(p, i, 'prof')).join('')}
+          ${(cfg.profissionais || []).map((p, i) => itemRow(p, i, 'prof')).join('')}
         </div>
         <button class="btn btn-secondary btn-sm mt-8" id="btnAddProf">+ Adicionar</button>
       </div>
@@ -97,7 +96,7 @@ export function renderConfiguracoes(container) {
       <div class="card-header"><span class="card-title">🏷 Categorias de Serviço</span></div>
       <div class="card-body">
         <div id="catLista">
-          ${(cfg.categorias || []).map((c,i) => itemRow(c, i, 'cat')).join('')}
+          ${(cfg.categorias || []).map((c, i) => itemRow(c, i, 'cat')).join('')}
         </div>
         <button class="btn btn-secondary btn-sm mt-8" id="btnAddCat">+ Adicionar</button>
       </div>
@@ -108,7 +107,7 @@ export function renderConfiguracoes(container) {
       <div class="card-header"><span class="card-title">💳 Formas de Pagamento</span></div>
       <div class="card-body">
         <div id="pgtoLista">
-          ${(cfg.formasPagamento || ['Dinheiro','PIX','Cartão Débito','Cartão Crédito','Transferência']).map((f,i) => itemRow(f, i, 'pgto')).join('')}
+          ${(cfg.formasPagamento || ['Dinheiro', 'PIX', 'Cartão Débito', 'Cartão Crédito', 'Transferência']).map((f, i) => itemRow(f, i, 'pgto')).join('')}
         </div>
         <button class="btn btn-secondary btn-sm mt-8" id="btnAddPgto">+ Adicionar</button>
       </div>
@@ -136,7 +135,7 @@ export function renderConfiguracoes(container) {
   `;
 
   document.getElementById('btnAddProf').onclick = () => addItem('profLista', 'prof', 'Nome da profissional');
-  document.getElementById('btnAddCat').onclick  = () => addItem('catLista',  'cat',  'Ex: Cabelo');
+  document.getElementById('btnAddCat').onclick = () => addItem('catLista', 'cat', 'Ex: Cabelo');
   document.getElementById('btnAddPgto').onclick = () => addItem('pgtoLista', 'pgto', 'Ex: Boleto');
   document.getElementById('btnSalvarCfg').onclick = salvarConfig;
   initToggleTema();
@@ -153,8 +152,8 @@ function itemRow(val, i, tipo) {
 
 function addItem(listaId, tipo, placeholder) {
   const lista = document.getElementById(listaId);
-  const idx   = lista.children.length;
-  const div   = document.createElement('div');
+  const idx = lista.children.length;
+  const div = document.createElement('div');
   div.innerHTML = `<div class="form-grid cols-2 mb-16" data-item="${tipo}-${idx}" style="align-items:flex-end">
     <div class="form-group">
       <input type="text" class="${tipo}-input" placeholder="${placeholder}" />
@@ -166,21 +165,21 @@ function addItem(listaId, tipo, placeholder) {
 
 function salvarConfig() {
   const cfg = {
-    nomeSalao:    document.getElementById('cfg-nome').value.trim(),
-    responsavel:  document.getElementById('cfg-resp').value.trim(),
-    cidade:       document.getElementById('cfg-cidade').value.trim(),
-    ano:          parseInt(document.getElementById('cfg-ano').value) || new Date().getFullYear(),
-    telefone:     document.getElementById('cfg-tel').value.trim(),
-    instagram:    document.getElementById('cfg-ig').value.trim(),
-    valorHora:    parseFloat(document.getElementById('cfg-hora').value) || 40,
-    atendMedios:  parseInt(document.getElementById('cfg-atend').value) || 80,
+    nomeSalao: document.getElementById('cfg-nome').value.trim(),
+    responsavel: document.getElementById('cfg-resp').value.trim(),
+    cidade: document.getElementById('cfg-cidade').value.trim(),
+    ano: parseInt(document.getElementById('cfg-ano').value) || new Date().getFullYear(),
+    telefone: document.getElementById('cfg-tel').value.trim(),
+    instagram: document.getElementById('cfg-ig').value.trim(),
+    valorHora: parseFloat(document.getElementById('cfg-hora').value) || 40,
+    atendMedios: parseInt(document.getElementById('cfg-atend').value) || 80,
     mesCustoFixo: parseInt(document.getElementById('cfg-mes-cf').value),
-    multMin:      parseFloat(document.getElementById('cfg-mult-min').value) || 2,
-    multIdeal:    parseFloat(document.getElementById('cfg-mult-ideal').value) || 2.5,
-    multPrem:     parseFloat(document.getElementById('cfg-mult-prem').value) || 3,
-    profissionais:  [...document.querySelectorAll('.prof-input')].map(i => i.value.trim()).filter(Boolean),
-    categorias:     [...document.querySelectorAll('.cat-input')].map(i => i.value.trim()).filter(Boolean),
-    formasPagamento:[...document.querySelectorAll('.pgto-input')].map(i => i.value.trim()).filter(Boolean),
+    multMin: parseFloat(document.getElementById('cfg-mult-min').value) || 2,
+    multIdeal: parseFloat(document.getElementById('cfg-mult-ideal').value) || 2.5,
+    multPrem: parseFloat(document.getElementById('cfg-mult-prem').value) || 3,
+    profissionais: [...document.querySelectorAll('.prof-input')].map(i => i.value.trim()).filter(Boolean),
+    categorias: [...document.querySelectorAll('.cat-input')].map(i => i.value.trim()).filter(Boolean),
+    formasPagamento: [...document.querySelectorAll('.pgto-input')].map(i => i.value.trim()).filter(Boolean),
   };
   Config.save(cfg);
   const el = document.getElementById('sidebarNomeSalao');
@@ -190,14 +189,14 @@ function salvarConfig() {
 
 // ── Toggle de tema (Aparência) ─────────────────────────
 function initToggleTema() {
-  const btn   = document.getElementById('btnToggleTema');
+  const btn = document.getElementById('btnToggleTema');
   const label = document.getElementById('temaLabel');
-  const icon  = document.getElementById('temaIcon');
+  const icon = document.getElementById('temaIcon');
 
   function syncBtn() {
     const atual = window.__getTheme?.() || 'light';
     if (label) label.textContent = atual === 'dark' ? 'Modo Escuro' : 'Modo Claro';
-    if (icon)  icon.setAttribute('data-lucide', atual === 'dark' ? 'moon' : 'sun');
+    if (icon) icon.setAttribute('data-lucide', atual === 'dark' ? 'moon' : 'sun');
     if (window.lucide) window.lucide.createIcons();
   }
 
@@ -206,7 +205,7 @@ function initToggleTema() {
   if (btn) {
     btn.onclick = () => {
       const atual = window.__getTheme?.() || 'light';
-      const novo  = atual === 'dark' ? 'light' : 'dark';
+      const novo = atual === 'dark' ? 'light' : 'dark';
       window.__applyTheme?.(novo);
       syncBtn();
     };

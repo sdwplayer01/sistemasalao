@@ -1,4 +1,3 @@
-import * as UI from '../ui.js';
 // ═══════════════════════════════════════════════════════
 // pages/custos.js
 // ═══════════════════════════════════════════════════════
@@ -17,7 +16,7 @@ export function renderCustos(container) {
     <div class="action-bar">
       <label style="font-weight:500;color:var(--txt-muted);font-size:13px">Mês:</label>
       <select id="custosMesSel" style="max-width:180px">
-        ${MESES.map((m,i) => `<option value="${i}" ${i===mesAtual?'selected':''}>${m} ${ano}</option>`).join('')}
+        ${MESES.map((m, i) => `<option value="${i}" ${i === mesAtual ? 'selected' : ''}>${m} ${ano}</option>`).join('')}
       </select>
     </div>
 
@@ -37,21 +36,21 @@ function renderForm(ano, mesIdx) {
   const formEl = document.getElementById('custosForm');
   if (!formEl) return;
 
-  const key  = mesKey(ano, mesIdx);
+  const key = mesKey(ano, mesIdx);
   const data = Custos.getMes(key);
-  const total= Custos.totalMes(key);
+  const total = Custos.totalMes(key);
 
   const campos = [
-    ['aluguel',       '🏠 Aluguel'],
-    ['condominio',    '🏢 Condomínio'],
-    ['energia',       '⚡ Energia Elétrica'],
-    ['agua',          '💧 Água'],
-    ['internet',      '🌐 Internet / Telefone'],
-    ['auxiliar',      '👩 Ajuda de Auxiliar / Funcionário'],
-    ['limpeza',       '🧹 Material de Limpeza'],
+    ['aluguel', '🏠 Aluguel'],
+    ['condominio', '🏢 Condomínio'],
+    ['energia', '⚡ Energia Elétrica'],
+    ['agua', '💧 Água'],
+    ['internet', '🌐 Internet / Telefone'],
+    ['auxiliar', '👩 Ajuda de Auxiliar / Funcionário'],
+    ['limpeza', '🧹 Material de Limpeza'],
     ['contabilidade', '📋 Contabilidade'],
-    ['software',      '💻 Sistema / Software'],
-    ['marketing',     '📣 Marketing / Publicidade'],
+    ['software', '💻 Sistema / Software'],
+    ['marketing', '📣 Marketing / Publicidade'],
   ];
 
   const outros = data.outros || [{ desc: '', valor: '' }];
@@ -99,14 +98,14 @@ function renderForm(ano, mesIdx) {
         <div class="table-wrap" style="border:none;box-shadow:none">
           <table>
             <thead><tr>
-              ${MESES.map(m=>`<th class="td-center">${m.slice(0,3)}</th>`).join('')}
+              ${MESES.map(m => `<th class="td-center">${m.slice(0, 3)}</th>`).join('')}
               <th class="td-center">Média</th>
             </tr></thead>
             <tbody><tr>
-              ${MESES.map((_,i) => {
-                const t = Custos.totalMes(mesKey(ano, i));
-                return `<td class="td-center td-mono ${i===mesIdx?'fw-600 text-plum':''}">${t ? R$(t) : '<span class="text-muted">—</span>'}</td>`;
-              }).join('')}
+              ${MESES.map((_, i) => {
+    const t = Custos.totalMes(mesKey(ano, i));
+    return `<td class="td-center td-mono ${i === mesIdx ? 'fw-600 text-plum' : ''}">${t ? R$(t) : '<span class="text-muted">—</span>'}</td>`;
+  }).join('')}
               <td class="td-center td-mono fw-600">${R$(Custos.mediaMeses())}</td>
             </tr></tbody>
           </table>
@@ -119,7 +118,7 @@ function renderForm(ano, mesIdx) {
     const c = document.getElementById('outrosContainer');
     const idx = c.children.length;
     const div = document.createElement('div');
-    div.innerHTML = outroRow({ desc:'', valor:'' }, idx);
+    div.innerHTML = outroRow({ desc: '', valor: '' }, idx);
     c.appendChild(div.firstElementChild);
     bindOutros();
   };
@@ -149,14 +148,14 @@ function outroRow(o, i) {
 function bindOutros() {
   document.querySelectorAll('.outro-val').forEach(inp => {
     inp.oninput = () => {
-      const campos = [['aluguel'],['condominio'],['energia'],['agua'],['internet'],['auxiliar'],['limpeza'],['contabilidade'],['software'],['marketing']];
+      const campos = [['aluguel'], ['condominio'], ['energia'], ['agua'], ['internet'], ['auxiliar'], ['limpeza'], ['contabilidade'], ['software'], ['marketing']];
       atualizarTotal(campos);
     };
   });
 }
 
 function atualizarTotal(campos) {
-  let total = campos.reduce((s,[k]) => {
+  let total = campos.reduce((s, [k]) => {
     const v = parseFloat(document.getElementById(`cf-${k}`)?.value) || 0;
     return s + v;
   }, 0);
@@ -175,7 +174,7 @@ function salvarCustos(key, campos, mesIdx, ano) {
   const outros = [];
   document.querySelectorAll('[data-outro]').forEach(row => {
     const desc = row.querySelector('.outro-desc')?.value.trim();
-    const valor= parseFloat(row.querySelector('.outro-val')?.value) || 0;
+    const valor = parseFloat(row.querySelector('.outro-val')?.value) || 0;
     if (desc || valor) outros.push({ desc, valor });
   });
   data.outros = outros;

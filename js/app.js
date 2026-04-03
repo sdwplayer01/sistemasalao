@@ -264,7 +264,7 @@ window.__applyTheme = applyTheme
 window.__getTheme   = () => localStorage.getItem('salao_theme') || 'light'
 
 // Mensagens rotativas Premium
-(function () {
+;(function () {
   const container = document.getElementById('rotatingMsgBar');
   if (!container) return;
 

@@ -1,4 +1,3 @@
-import * as UI from '../ui.js';
 // ═══════════════════════════════════════════════════════
 // pages/dashboard.js — Dashboard Operacional v3.0
 // - KPIs pesados removidos do topo → ficam em Diário/Caixa
@@ -67,26 +66,26 @@ function checkOnboarding() {
 
 // ── Render principal ──────────────────────────────────
 export function renderDashboard(container) {
-  const cfg      = Config.get();
-  const ano      = cfg.ano;
+  const cfg = Config.get();
+  const ano = cfg.ano;
   const mesAtual = new Date().getMonth();
-  const hoje     = new Date().toISOString().slice(0, 10);
+  const hoje = new Date().toISOString().slice(0, 10);
 
   // ── Dados OPERACIONAIS (rápidos — apenas hoje/este mês) ──
-  const agendaHoje  = Agenda.getHoje().slice(0, 6);
-  const agendaAmanha= Agenda.getAmanha().slice(0, 3);
-  const lancHoje    = Diario.getAll().filter(e => e.data === hoje);
-  const estoqBaixo  = Produtos.getLowStock();
-  const retencao    = getRetencao30dias().slice(0, 5);
-  const caixaHoje   = lancHoje.reduce((s, e) => s + (parseFloat(e.precoCobrado) || 0) * (parseInt(e.qtd) || 1), 0);
-  const caixaAtend  = lancHoje.reduce((s, e) => s + (parseInt(e.qtd) || 1), 0);
+  const agendaHoje = Agenda.getHoje().slice(0, 6);
+  const agendaAmanha = Agenda.getAmanha().slice(0, 3);
+  const lancHoje = Diario.getAll().filter(e => e.data === hoje);
+  const estoqBaixo = Produtos.getLowStock();
+  const retencao = getRetencao30dias().slice(0, 5);
+  const caixaHoje = lancHoje.reduce((s, e) => s + (parseFloat(e.precoCobrado) || 0) * (parseInt(e.qtd) || 1), 0);
+  const caixaAtend = lancHoje.reduce((s, e) => s + (parseInt(e.qtd) || 1), 0);
 
   // ── Resumo do mês atual (leve — só este mês) ─────────────
-  const resMes      = Diario.resumoMes(ano, mesAtual);
-  const cfPorCliente= Servicos.custoFixoPorClienteCalc(cfg);
+  const resMes = Diario.resumoMes(ano, mesAtual);
+  const cfPorCliente = Servicos.custoFixoPorClienteCalc(cfg);
 
   // ── Indicadores minimalistas do topo ─────────────────────
-  const cfReal      = Receitas.mediaCustoFixoReal();
+  const cfReal = Receitas.mediaCustoFixoReal();
 
   container.innerHTML = `
     <div class="flex-between" style="margin-bottom:4px">
@@ -141,16 +140,16 @@ export function renderDashboard(container) {
           Agenda de Hoje
         </div>
         ${agendaHoje.length
-          ? agendaHoje.map(a => `
+      ? agendaHoje.map(a => `
             <div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--border);font-size:13px">
               <span class="badge badge-plum" style="min-width:46px;text-align:center;font-weight:600">${a.horario || '—'}</span>
               <span style="flex:1;font-weight:500;color:var(--txt-dark)">${a.cliente || '—'}</span>
               <span class="badge ${a.status === 'confirmado' ? 'badge-green' : a.status === 'realizado' ? 'badge-rose' : 'badge-plum'}" style="font-size:10px">${a.status || 'agendado'}</span>
             </div>`).join('')
-          : `<div style="text-align:center;padding:20px 0;color:var(--txt-muted);font-size:13px">
+      : `<div style="text-align:center;padding:20px 0;color:var(--txt-muted);font-size:13px">
                Nenhum agendamento hoje
              </div>`
-        }
+    }
         <a href="#" id="linkVerAgenda" style="font-size:12px;color:var(--plum);display:block;margin-top:8px;text-decoration:none;font-weight:500">Ver agenda completa →</a>
       </div>
 
@@ -161,24 +160,24 @@ export function renderDashboard(container) {
           Caixa de Hoje
         </div>
         ${lancHoje.length
-          ? `<div style="text-align:center;padding:10px 0">
+      ? `<div style="text-align:center;padding:10px 0">
                <div style="font-size:30px;font-weight:700;font-family:var(--font-serif);color:var(--txt-green)">${R$(caixaHoje)}</div>
                <div style="font-size:12px;color:var(--txt-muted);margin-top:4px">${caixaAtend} atendimento${caixaAtend !== 1 ? 's' : ''}</div>
              </div>
              <div style="margin-top:10px">
                ${(() => {
-                 const fatSvc  = lancHoje.filter(e => (e.tipo ?? 'servico') === 'servico').reduce((s,e) => s+(parseFloat(e.precoCobrado)||0)*(parseInt(e.qtd)||1), 0);
-                 const fatProd = lancHoje.filter(e => e.tipo === 'produto').reduce((s,e) => s+(parseFloat(e.precoCobrado)||0)*(parseInt(e.qtd)||1), 0);
-                 const rows = [];
-                 if (fatSvc  > 0) rows.push(`<div style="display:flex;justify-content:space-between;font-size:13px;padding:3px 0;color:var(--txt-dark)"><span class="text-muted">Servicos</span><span class="fw-600">${R$(fatSvc)}</span></div>`);
-                 if (fatProd > 0) rows.push(`<div style="display:flex;justify-content:space-between;font-size:13px;padding:3px 0;color:var(--txt-dark)"><span class="text-muted">Produtos</span><span class="fw-600">${R$(fatProd)}</span></div>`);
-                 return rows.join('');
-               })()}
+        const fatSvc = lancHoje.filter(e => (e.tipo ?? 'servico') === 'servico').reduce((s, e) => s + (parseFloat(e.precoCobrado) || 0) * (parseInt(e.qtd) || 1), 0);
+        const fatProd = lancHoje.filter(e => e.tipo === 'produto').reduce((s, e) => s + (parseFloat(e.precoCobrado) || 0) * (parseInt(e.qtd) || 1), 0);
+        const rows = [];
+        if (fatSvc > 0) rows.push(`<div style="display:flex;justify-content:space-between;font-size:13px;padding:3px 0;color:var(--txt-dark)"><span class="text-muted">Servicos</span><span class="fw-600">${R$(fatSvc)}</span></div>`);
+        if (fatProd > 0) rows.push(`<div style="display:flex;justify-content:space-between;font-size:13px;padding:3px 0;color:var(--txt-dark)"><span class="text-muted">Produtos</span><span class="fw-600">${R$(fatProd)}</span></div>`);
+        return rows.join('');
+      })()}
              </div>`
-          : `<div style="text-align:center;padding:20px 0;color:var(--txt-muted);font-size:13px">
+      : `<div style="text-align:center;padding:20px 0;color:var(--txt-muted);font-size:13px">
                Nenhum lançamento hoje
              </div>`
-        }
+    }
         <a href="#" id="linkVerDiario" style="font-size:12px;color:var(--plum);display:block;margin-top:8px;text-decoration:none;font-weight:500">Abrir Diário / Caixa →</a>
       </div>
 
@@ -189,7 +188,7 @@ export function renderDashboard(container) {
           Alertas de Estoque
         </div>
         ${estoqBaixo.length
-          ? `<div style="font-size:11px;color:var(--txt-muted);margin-bottom:8px">${estoqBaixo.length} produto${estoqBaixo.length !== 1 ? 's' : ''} abaixo do mínimo:</div>
+      ? `<div style="font-size:11px;color:var(--txt-muted);margin-bottom:8px">${estoqBaixo.length} produto${estoqBaixo.length !== 1 ? 's' : ''} abaixo do mínimo:</div>
              ${estoqBaixo.slice(0, 5).map(p => `
                <div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid var(--border);font-size:13px">
                  <span class="badge badge-warn" style="font-family:monospace;font-size:10px">${p.sku}</span>
@@ -198,10 +197,10 @@ export function renderDashboard(container) {
                </div>`).join('')}
              ${estoqBaixo.length > 5 ? `<p style="font-size:11px;color:var(--txt-muted);margin-top:6px">+${estoqBaixo.length - 5} outros.</p>` : ''}
              <a href="#" id="linkVerEstoque" style="font-size:12px;color:var(--plum);display:block;margin-top:8px;text-decoration:none;font-weight:500">Ver produtos →</a>`
-          : `<div style="text-align:center;padding:20px 0;color:var(--txt-muted);font-size:13px">
+      : `<div style="text-align:center;padding:20px 0;color:var(--txt-muted);font-size:13px">
                Estoque em dia
              </div>`
-        }
+    }
       </div>
 
       <!-- Retenção CRM -->
@@ -211,18 +210,18 @@ export function renderDashboard(container) {
           Retenção — mais de 30 dias
         </div>
         ${retencao.length
-          ? retencao.map(r => `
+      ? retencao.map(r => `
             <div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--border);font-size:13px">
               <span class="badge badge-rose" style="min-width:36px;text-align:center;font-weight:600">${r.dias}d</span>
               <span style="flex:1;font-weight:500;color:var(--txt-dark)">${r.nome}</span>
               ${r.tel && linkWA(r.tel)
-                ? `<a href="${linkWA(r.tel)}" target="_blank" class="wa-link" title="${formatarTelefone(r.tel)}"><i data-lucide="message-circle" style="width:14px;height:14px"></i></a>`
-                : `<span class="text-muted" style="font-size:11px">sem tel</span>`}
+          ? `<a href="${linkWA(r.tel)}" target="_blank" class="wa-link" title="${formatarTelefone(r.tel)}"><i data-lucide="message-circle" style="width:14px;height:14px"></i></a>`
+          : `<span class="text-muted" style="font-size:11px">sem tel</span>`}
             </div>`).join('')
-          : `<div style="text-align:center;padding:20px 0;color:var(--txt-muted);font-size:13px">
+      : `<div style="text-align:center;padding:20px 0;color:var(--txt-muted);font-size:13px">
                Retencao em dia!
              </div>`
-        }
+    }
         ${retencao.length ? `<a href="#" id="linkVerCRM" style="font-size:12px;color:var(--plum);display:block;margin-top:8px;text-decoration:none;font-weight:500">Ver todos no CRM →</a>` : ''}
       </div>
 
@@ -271,16 +270,16 @@ export function renderDashboard(container) {
         </div>
         <div class="card-body" style="padding:14px 18px">
           ${agendaAmanha.length
-            ? agendaAmanha.map(a => `
+      ? agendaAmanha.map(a => `
               <div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--border);font-size:13px">
                 <span class="badge badge-plum" style="min-width:46px;text-align:center;font-weight:600">${a.horario || '—'}</span>
                 <span style="flex:1;color:var(--txt-dark)">${a.cliente || '—'}</span>
                 <span style="font-size:11px;color:var(--txt-muted)">${a.servicoNome || ''}</span>
               </div>`).join('')
-            : `<div style="text-align:center;padding:20px 0;color:var(--txt-muted);font-size:13px">
+      : `<div style="text-align:center;padding:20px 0;color:var(--txt-muted);font-size:13px">
                  Nenhum agendamento para amanha
                </div>`
-          }
+    }
           <a href="#" id="linkVerAgenda2" style="font-size:12px;color:var(--plum);display:block;margin-top:8px;text-decoration:none;font-weight:500">Ver agenda completa →</a>
         </div>
       </div>
