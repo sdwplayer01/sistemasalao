@@ -262,3 +262,22 @@ document.addEventListener('DOMContentLoaded', async () => {
 window.__navigateTo = navigateTo
 window.__applyTheme = applyTheme
 window.__getTheme   = () => localStorage.getItem('salao_theme') || 'light'
+
+// Mensagens rotativas Premium
+(function () {
+  const container = document.getElementById('rotatingMsgBar');
+  if (!container) return;
+
+  const messages = container.querySelectorAll('.rotating-msg-text');
+  let index = 0;
+
+  if (!messages.length) return;
+
+  setInterval(() => {
+    messages[index].classList.remove('is-active');
+
+    index = (index + 1) % messages.length;
+
+    messages[index].classList.add('is-active');
+  }, 5000);
+})();

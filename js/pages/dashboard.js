@@ -11,35 +11,6 @@ import { Config, Diario, Servicos, Custos, Receitas, Agenda, Produtos, MESES } f
 import { R$, pct, num, mesKey, fmtData, linkWA, formatarTelefone } from '../utils.js';
 import { getRetencao30dias } from './clientes.js';
 
-// ── Mensagens rotativas (sem emoji, clean) ────────────
-const MSGS_ROTATIVAS = [
-  'Tem alguma conta fixa para pagar hoje?',
-  'Fazer pedido de estoque?',
-  'Cliente esperando orçamento?',
-  'Conferiu os agendamentos de amanhã?',
-  'Já lançou os atendimentos de hoje no Diário?',
-];
-
-let _msgInterval = null;
-
-function initMensagensRotativas(el) {
-  if (!el) return;
-  let idx = 0;
-  const span = el.querySelector('.rotating-msg-text');
-  if (!span) return;
-
-  // Limpa intervalo anterior se existir (troca de página)
-  clearInterval(_msgInterval);
-
-  _msgInterval = setInterval(() => {
-    span.classList.add('fade-out');
-    setTimeout(() => {
-      idx = (idx + 1) % MSGS_ROTATIVAS.length;
-      span.textContent = MSGS_ROTATIVAS[idx];
-      span.classList.remove('fade-out');
-    }, 420);
-  }, 5000);
-}
 
 // ── Onboarding modal (só no primeiro acesso) ──────────
 function checkOnboarding() {
@@ -125,11 +96,6 @@ export function renderDashboard(container) {
       </div>
     </div>
 
-    <!-- Barra de lembretes rotativos -->
-    <div class="rotating-msg-bar" id="rotatingMsgBar">
-      <div class="rotating-msg-dot"></div>
-      <span class="rotating-msg-text">${MSGS_ROTATIVAS[0]}</span>
-    </div>
 
     <!-- Mini-KPIs operacionais (carrossel mobile) -->
     <div class="kpi-grid" style="margin-bottom:20px">
@@ -332,8 +298,6 @@ export function renderDashboard(container) {
   container.querySelector?.('#linkVerEstoque')?.addEventListener('click', e => { e.preventDefault(); nav('servicos'); });
   container.querySelector?.('#linkVerCRM')?.addEventListener('click', e => { e.preventDefault(); nav('clientes'); });
 
-  // ── Inicia mensagens rotativas ──────────────────────
-  initMensagensRotativas(container.querySelector('#rotatingMsgBar'));
 
   // ── Onboarding (primeiro acesso) ───────────────────
   setTimeout(() => checkOnboarding(), 600);
