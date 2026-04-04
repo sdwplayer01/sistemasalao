@@ -21,36 +21,36 @@ export function renderDashboard(container) {
 }
 
 function _render(container) {
-  const cfg   = Config.get();
-  const ano   = cfg.ano;
-  const now   = new Date();
+  const cfg = Config.get();
+  const ano = cfg.ano;
+  const now = new Date();
   const mesIdx = now.getMonth();
   const mesKey = `${ano}-${String(mesIdx + 1).padStart(2, '0')}`;
 
   // ── Dados financeiros do mês ──────────────────────
-  const resumo   = Diario.resumoMes(ano, mesIdx);
-  const cfBruto  = Custos.totalMes(mesKey);
+  const resumo = Diario.resumoMes(ano, mesIdx);
+  const cfBruto = Custos.totalMes(mesKey);
   const recInternas = Receitas.totalMes(mesKey);
-  const cfReal   = Math.max(0, cfBruto - recInternas);
+  const cfReal = Math.max(0, cfBruto - recInternas);
 
   // ── Saúde da carteira ─────────────────────────────
   let crm = { fiel: 0, nova: 0, regular: 0, ausente: 0, inativa: 0, total: 0, taxa: 0 };
   try { crm = getRetencao30dias(); } catch (e) { console.warn('CRM data error:', e); }
 
   // ── Agenda de hoje ────────────────────────────────
-  const agendaHoje  = Agenda.getHoje();
+  const agendaHoje = Agenda.getHoje();
   const agendaAmanha = Agenda.getAmanha();
 
   // ── Estoque baixo ─────────────────────────────────
   let lowStock = [];
-  try { lowStock = Produtos.getLowStock(); } catch (e) {}
+  try { lowStock = Produtos.getLowStock(); } catch (e) { }
 
   // ── Gráfico de pizza ──────────────────────────────
   const totalCRM = crm.total || 1; // evita div/0
   const slices = [
-    { key: 'fiel',    label: 'Fiéis',    count: crm.fiel,    color: 'var(--txt-green)' },
-    { key: 'nova',    label: 'Novas',    count: crm.nova,    color: 'var(--plum)' },
-    { key: 'regular', label: 'Regulares',count: crm.regular, color: 'var(--plum-light)' },
+    { key: 'fiel', label: 'Fiéis', count: crm.fiel, color: 'var(--txt-green)' },
+    { key: 'nova', label: 'Novas', count: crm.nova, color: 'var(--plum)' },
+    { key: 'regular', label: 'Regulares', count: crm.regular, color: 'var(--plum-light)' },
     { key: 'ausente', label: 'Ausentes', count: crm.ausente, color: '#e6a817' },
     { key: 'inativa', label: 'Inativas', count: crm.inativa, color: 'var(--txt-red)' },
   ];
@@ -134,11 +134,11 @@ function _render(container) {
         </div>
         <div class="card-body" style="max-height:240px;overflow-y:auto">
           ${agendaHoje.length === 0
-            ? `<div style="text-align:center;padding:20px;color:var(--txt-muted);font-size:13px">
+      ? `<div style="text-align:center;padding:20px;color:var(--txt-muted);font-size:13px">
                  <i data-lucide="calendar-off" style="width:28px;height:28px;opacity:.3;display:block;margin:0 auto 8px"></i>
                  Nenhum agendamento para hoje.
                </div>`
-            : agendaHoje.map(a => `
+      : agendaHoje.map(a => `
               <div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--bg-soft)">
                 <span class="badge badge-plum" style="min-width:50px;text-align:center">${a.horario || '—'}</span>
                 <span class="fw-600" style="flex:1">${a.cliente || '—'}</span>
@@ -185,10 +185,15 @@ function _render(container) {
         </div>
       </div>
 
-      ${lowStock.length > 0 ? `
+          ${lowStock.length > 0 ? `
       <!-- Estoque Baixo -->
       <div class="card shadow-sm" style="border-left:3px solid var(--txt-red)">
-        <div class="card-header"><span class="card-title" style="color:var(--txt-red)"><i data-lucide="alert-triangle" style="width:16px;height:16px;vertical-align:-2px"></i> Estoque Baixo</span></div>
+        <div class="card-header">
+          <span class="card-title" style="color:var(--txt-red)">
+            <i data-lucide="alert-triangle" style="width:16px;height:16px;vertical-align:-2px"></i> 
+            Estoque Baixo
+          </span>
+        </div>
         <div class="card-body" style="max-height:160px;overflow-y:auto">
           ${lowStock.slice(0, 5).map(p => `
             <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--bg-soft);font-size:13px">
@@ -202,13 +207,8 @@ function _render(container) {
       ` : ''}
 
     </div>
-  `;
+  `);
 
-  // ── Listeners ─────────────────────────────────────
-  container.querySelector('#linkVerCRM')?.addEventListener('click', e => {
-    e.preventDefault();
-    window.__navigateTo('clientes');
-  });
-
+  // Inicializa os ícones e garante que a barra de mensagens funcione
   initIcons();
 }
