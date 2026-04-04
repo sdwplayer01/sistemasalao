@@ -1,7 +1,7 @@
 import { Diario, Servicos, Produtos, Clientes, Config, MESES } from '../storage.js';
 import {
-  R$, pct, fmtData, hoje, diaSemana, formatarTelefone,
-  linkWA, limparTelefone, toast, openModal, closeModal,
+  R$, fmtData, hoje,
+  toast, openModal, closeModal,
   emptyState, applyMoneyMask, initIcons
 } from '../utils.js';
 import { resumoCards } from '../ui.js';
@@ -47,12 +47,10 @@ export function renderDiario(container) {
 
   document.getElementById('btn-novo-lancamento').onclick = () => abrirModalLancamento();
 
-  // Event Delegation para exclusão de lançamentos
+  // Event delegation para exclusão — chama função local, sem window.__utils
   content.onclick = (e) => {
     const btn = e.target.closest('[data-excluir-id]');
-    if (btn) {
-      window.__utils.excluirLancamento(btn.dataset.excluirId);
-    }
+    if (btn) excluirLancamento(btn.dataset.excluirId);
   };
 
   initIcons();
@@ -64,14 +62,12 @@ function renderTabHoje(container, lista) {
     return;
   }
 
-  // Cálculos para o resumo hoje
-  const fat     = lista.reduce((s, e) => s + (parseFloat(e.valor) || 0), 0);
-  const fatSvc  = lista.filter(e => e.tipo === 'servico' || !e.tipo).reduce((s, e) => s + (parseFloat(e.valor) || 0), 0);
+  const fat = lista.reduce((s, e) => s + (parseFloat(e.valor) || 0), 0);
+  const fatSvc = lista.filter(e => e.tipo === 'servico' || !e.tipo).reduce((s, e) => s + (parseFloat(e.valor) || 0), 0);
   const fatProd = lista.filter(e => e.tipo === 'produto').reduce((s, e) => s + (parseFloat(e.valor) || 0), 0);
-  const atend   = lista.length;
+  const atend = lista.length;
 
   container.innerHTML = `
-    <!-- Resumo do dia -->
     ${resumoCards([
     { label: 'Caixa Hoje', value: R$(fat), cor: 'green', sub: atend + ' atendimento' + (atend !== 1 ? 's' : '') },
     { label: 'Serviços', value: R$(fatSvc), cor: 'plum' },
@@ -110,11 +106,10 @@ function renderTabHoje(container, lista) {
 }
 
 function renderTabHistorico(container, lista) {
-  // Lógica de histórico simplificada para o exemplo
   container.innerHTML = `<div class="card"><p style="padding:20px; color:var(--txt-muted)">O histórico completo pode ser visualizado no módulo de Controle Anual.</p></div>`;
 }
 
-function abrirModalLancamento(editId = null) {
+function abrirModalLancamento() {
   const svcs = Servicos.getAll();
   const prods = Produtos.getAll();
 
@@ -159,7 +154,6 @@ function abrirModalLancamento(editId = null) {
   openModal('Novo Atendimento', body, footer);
   applyMoneyMask(document.getElementById('modalBody'));
 
-  // Auto-preenche valor ao mudar item
   const selectItem = document.getElementById('f-item');
   selectItem.onchange = () => {
     const opt = selectItem.options[selectItem.selectedIndex];
@@ -175,28 +169,27 @@ function abrirModalLancamento(editId = null) {
 
     if (!cliente || valor <= 0) return toast('Preencha os campos obrigatórios.', 'error');
 
-    const novo = {
+    Diario.add({
       id: Date.now().toString(),
       data: hoje(),
       cliente,
       item: selectItem.value,
       tipo: selectItem.options[selectItem.selectedIndex].dataset.tipo,
       valor,
-      formaPgto: document.getElementById('f-pgto').value
-    };
+      formaPgto: document.getElementById('f-pgto').value,
+    });
 
-    Diario.add(novo);
     toast('Lançamento salvo!');
     closeModal();
     window.__navigateTo('diario');
   };
 }
 
-window.__utils = window.__utils || {};
-window.__utils.excluirLancamento = (id) => {
-  if (confirm('Excluir este registo?')) {
+// Função local — não depende de window.__utils
+function excluirLancamento(id) {
+  if (confirm('Excluir este registro?')) {
     Diario.remove(id);
     window.__navigateTo('diario');
     toast('Removido.');
   }
-};
+}
