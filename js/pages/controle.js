@@ -14,7 +14,10 @@ export function renderControle(container) {
     const cfBruto = Custos.totalMes(key);
     const cfReal = Receitas.custoFixoRealMes(key);
     const allDiario = Diario.getAll().filter(e => e.data && e.data.startsWith(key));
-    const allReceitas = Receitas.getAll().filter(r => r.data && r.data.startsWith(key));
+    // Proteção Array fallback sugerida para resolver TypeError: filter is not a function
+    const allReceitas = (Array.isArray(Receitas.getAll()) ? Receitas.getAll() : []).filter(item => {
+        return item && item.data && item.data.startsWith(key);
+    });
 
     const propResp = cfg.profissionais && cfg.profissionais.length > 0 ? cfg.profissionais[0] : '';
     const comissoes = allDiario.reduce((s, e) => s + (parseFloat(e.comissaoValor) || 0) * (parseInt(e.qtd) || 1), 0);
