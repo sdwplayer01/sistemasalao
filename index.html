@@ -1,17 +1,24 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Salão Premium — Sistema de Gestão</title>
+  <link rel="icon" type="image/png" sizes="32x32"
+    href="https://raw.githubusercontent.com/sdwplayer01/sistemasalao/refs/heads/main/assents/favicon-32x32.png" />
   <link rel="stylesheet" href="css/style.css" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600&family=Inter:wght@300;400;500;600&family=Playfair+Display:wght@400;700&display=swap" />
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600&family=Inter:wght@300;400;500;600&family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet" />
-  <!-- Lucide Icons (v2.3) — ícones vetoriais leves -->
+  <link rel="preload" as="style"
+    href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600&family=Inter:wght@300;400;500;600&family=Playfair+Display:wght@400;700&display=swap" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600&family=Inter:wght@300;400;500;600&family=Playfair+Display:wght@400;700&display=swap"
+    rel="stylesheet" />
+  <!-- Lucide Icons (v0.344.0) — ícones vetoriais leves -->
   <script src="https://unpkg.com/lucide@0.344.0/dist/umd/lucide.min.js"></script>
 </head>
+
 <body>
 
   <!-- ── TELA DE LOGIN ───────────────────────────────── -->
@@ -23,7 +30,9 @@
     <!-- SIDEBAR -->
     <aside class="sidebar" id="sidebar">
       <div class="sidebar-brand">
-        <button class="btn-menu" id="btnMenu" style="background:none;border:none;color:var(--txt-white);font-size:24px;cursor:pointer;display:flex;align-items:center;justify-content:center"><i data-lucide="menu"></i></button>
+        <button class="btn-menu" id="btnMenu"
+          style="background:none;border:none;color:var(--txt-white);font-size:24px;cursor:pointer;display:flex;align-items:center;justify-content:center"><i
+            data-lucide="menu"></i></button>
       </div>
 
       <nav class="sidebar-nav">
@@ -67,8 +76,11 @@
 
       <div class="sidebar-footer">
         <div style="padding-top:4px">
-          <div id="userEmail" style="font-size:11px;color:rgba(255,255,255,.5);margin-bottom:6px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></div>
-          <button id="btnLogout" style="width:100%;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:rgba(255,255,255,.7);padding:7px;border-radius:6px;font-size:12px;cursor:pointer">
+          <div id="userEmail"
+            style="font-size:11px;color:rgba(255,255,255,.5);margin-bottom:6px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">
+          </div>
+          <button id="btnLogout"
+            style="width:100%;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:rgba(255,255,255,.7);padding:7px;border-radius:6px;font-size:12px;cursor:pointer">
             ↩ Sair
           </button>
         </div>
@@ -78,7 +90,9 @@
     <!-- MAIN -->
     <main class="main-content">
       <div class="top-bar">
-        <button class="btn-menu-mobile" id="btnMenuMobile" style="background:none;border:none;color:var(--plum-light);font-size:24px;cursor:pointer;display:none;padding:0"><i data-lucide="menu"></i></button>
+        <button class="btn-menu-mobile" id="btnMenuMobile"
+          style="background:none;border:none;color:var(--plum-light);font-size:24px;cursor:pointer;display:none;padding:0"><i
+            data-lucide="menu"></i></button>
         <div id="topBarTitle">
           <span id="topBarNomeSalao" class="brand-name">Nome do Salão Padrão</span>
           <span class="brand-tagline">GESTÃO INTELIGENTE</span>
@@ -88,9 +102,7 @@
         </div>
       </div>
 
-
-
-      <div id="page-dashboard"    class="page active">
+      <div id="page-dashboard" class="page active">
         <div class="rotating-msg-bar" id="rotatingMsgBar">
           <span class="rotating-msg-text is-active">Tem alguma conta fixa para pagar hoje?</span>
           <span class="rotating-msg-text">Você já registrou o caixa de hoje?</span>
@@ -104,13 +116,13 @@
           <span class="rotating-msg-text">Você está precificando com estratégia?</span>
         </div>
       </div>
-      <div id="page-agenda"       class="page"></div>
-      <div id="page-diario"       class="page"></div>
-      <div id="page-servicos"     class="page"></div>
-      <div id="page-custos"       class="page"></div>
-      <div id="page-receitas"     class="page"></div>
-      <div id="page-controle"     class="page"></div>
-      <div id="page-clientes"     class="page"></div>
+      <div id="page-agenda" class="page"></div>
+      <div id="page-diario" class="page"></div>
+      <div id="page-servicos" class="page"></div>
+      <div id="page-custos" class="page"></div>
+      <div id="page-receitas" class="page"></div>
+      <div id="page-controle" class="page"></div>
+      <div id="page-clientes" class="page"></div>
       <div id="page-configuracoes" class="page"></div>
     </main>
 
@@ -123,7 +135,7 @@
         <h3 id="modalTitle">Título</h3>
         <button class="modal-close" id="modalClose">×</button>
       </div>
-      <div class="modal-body"   id="modalBody"></div>
+      <div class="modal-body" id="modalBody"></div>
       <div class="modal-footer" id="modalFooter"></div>
     </div>
   </div>
@@ -133,4 +145,5 @@
 
   <script type="module" src="js/app.js"></script>
 </body>
+
 </html>
