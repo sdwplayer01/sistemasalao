@@ -192,6 +192,7 @@ function abrirModalLancamento(editId = null) {
   };
 }
 
+window.__utils = window.__utils || {};
 window.__utils.excluirLancamento = (id) => {
   if (confirm('Excluir este registo?')) {
     Diario.remove(id);
