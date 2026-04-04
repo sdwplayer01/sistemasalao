@@ -46,11 +46,12 @@ export function formatarTelefone(v) {
   return v;
 }
 
-export function linkWA(telefone) {
-  let n = limparTelefone(telefone);
+export function linkWA(telefone, mensagem = '') {
+  let n = limparTelefone(telefone || '');
   if (n.length > 11 && n.startsWith('55')) n = n.slice(2);
   if (n.length < 10 || n.length > 11) return null;
-  return `https://wa.me/55${n}`;
+  const base = `https://wa.me/55${n}`;
+  return mensagem ? `${base}?text=${encodeURIComponent(mensagem)}` : base;
 }
 
 // ── Máscara de moeda (Anotação 4b) ─────────────────────
@@ -86,6 +87,32 @@ export function applyMoneyMask(container, selector = '[data-money]') {
         input.type = 'number';
         input.value = input.dataset.rawValue;
         input.dataset.rawValue = '';
+      }
+    });
+  });
+}
+
+// ── Máscara de telefone ─────────────────────────────────
+// Aplica formatação (XX) XXXXX-XXXX no blur, limpa no focus.
+// Uso: applyPhoneMask(container) — aplica em todos [data-phone]
+export function applyPhoneMask(container, selector = '[data-phone]') {
+  if (!container) return;
+  container.querySelectorAll(selector).forEach(input => {
+    if (input._phoneMask) return;
+    input._phoneMask = true;
+
+    input.addEventListener('blur', () => {
+      const raw = limparTelefone(input.value);
+      if (raw.length >= 10) {
+        input.dataset.rawPhone = raw;
+        input.value = formatarTelefone(raw);
+      }
+    });
+
+    input.addEventListener('focus', () => {
+      if (input.dataset.rawPhone) {
+        input.value = input.dataset.rawPhone;
+        input.dataset.rawPhone = '';
       }
     });
   });
@@ -134,10 +161,11 @@ export function ce(tag, attrs = {}, ...children) {
   return e;
 }
 
-export function emptyState(msg = 'Nenhum dado encontrado.') {
+export function emptyState(msg = 'Nenhum dado encontrado.', sub = '') {
   return `<div class="empty-state">
     <div class="empty-icon">✦</div>
     <p>${msg}</p>
+    ${sub ? `<p class="text-muted" style="font-size:12px;margin-top:4px">${sub}</p>` : ''}
   </div>`;
 }
 

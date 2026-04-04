@@ -29,7 +29,11 @@ function calcSegmento(stats) {
 }
 
 export function renderClientes(container) {
-  Clientes.syncFromDiarioAgenda();
+  try {
+    Clientes.syncFromDiarioAgenda();
+  } catch (e) {
+    console.warn('syncFromDiarioAgenda falhou:', e?.message || e);
+  }
   const todos = Clientes.getAll();
 
   // Contagem para os botões de filtro superior
@@ -159,7 +163,7 @@ function abrirPerfilModal(nome, onSave) {
   `;
 
   openModal(`Perfil: ${nome}`, body, `
-    <button class="btn btn-secondary" onclick="closeModal()">Fechar</button>
+    <button class="btn btn-secondary" onclick="window.__utils.closeModal()">Fechar</button>
     <button class="btn btn-primary" id="btnSalvarObs">Salvar Ficha</button>
   `);
 
@@ -195,19 +199,29 @@ function abrirModalNovoCliente(container) {
   };
 }
 
-// ── getRetencao30dias — Essencial para o gráfico do Dashboard ──────
+// ── getRetencao30dias — Retorna contagem por segmento para o Dashboard ──────
 export function getRetencao30dias() {
-  Clientes.syncFromDiarioAgenda();
+  try {
+    Clientes.syncFromDiarioAgenda();
+  } catch (e) {
+    console.warn('syncFromDiarioAgenda falhou:', e?.message || e);
+  }
   const todos = Clientes.getAll();
-  const ativos = todos.filter(c => {
-    const s = Clientes.calcStats(c.nome);
-    if (!s.ultimaVisita) return false;
-    const dias = (Date.now() - new Date(s.ultimaVisita + 'T12:00:00').getTime()) / 86400000;
-    return dias <= 30;
+  const cnt   = { fiel: 0, nova: 0, regular: 0, ausente: 0, inativa: 0 };
+
+  todos.forEach(c => {
+    try {
+      const s   = Clientes.calcStats(c.nome);
+      const seg = calcSegmento(s);
+      cnt[seg]  = (cnt[seg] || 0) + 1;
+    } catch (e) {
+      // ignora cliente com dados corrompidos
+    }
   });
 
-  return {
-    taxa: todos.length ? Math.round((ativos.length / todos.length) * 100) : 0,
-    qtd: ativos.length
-  };
+  const total  = todos.length;
+  const ativos = total - cnt.inativa;
+  const taxa   = total > 0 ? Math.round((ativos / total) * 100) : 0;
+
+  return { ...cnt, total, taxa };
 }

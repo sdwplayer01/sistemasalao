@@ -2383,3 +2383,238 @@ textarea {
     font-size: 11px;
   }
 }
+
+/* ── KPI MINI GRID (Dashboard) ────────────────── */
+.kpi-mini-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 14px;
+}
+
+.kpi-mini-card {
+  background: var(--bg-card);
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  padding: 16px 18px;
+  box-shadow: var(--shadow-sm);
+  transition: box-shadow .2s, transform .15s;
+}
+
+.kpi-mini-card:hover {
+  box-shadow: var(--shadow-md);
+  transform: translateY(-1px);
+}
+
+.kpi-mini-card.green {
+  border-left: 3px solid #4CAF50;
+}
+
+.kpi-mini-card.green-border {
+  border: 1.5px solid #4CAF50;
+  background: var(--sage);
+}
+
+.kpi-mini-card.plum {
+  border-left: 3px solid var(--plum);
+}
+
+.kpi-mini-card.plum-mid-border {
+  border: 1.5px solid var(--plum-mid);
+}
+
+.kpi-mini-card.rose {
+  border-left: 3px solid var(--rose);
+}
+
+.kpi-mini-card.blue {
+  border-left: 3px solid #1A4FA0;
+}
+
+.kpi-mini-card.warn {
+  border-left: 3px solid #F57C00;
+}
+
+/* ── CARD FOOTER ─────────────────────────────── */
+.card-footer {
+  padding: 10px 18px;
+  border-top: 1px solid var(--border);
+  background: var(--ghost);
+}
+
+/* ── SHADOW UTILITY ──────────────────────────── */
+.shadow-sm {
+  box-shadow: var(--shadow-sm);
+}
+
+/* ── STAT ROW (ui.js) ────────────────────────── */
+.stat-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--border);
+  font-size: 13px;
+}
+
+.stat-row:last-child {
+  border-bottom: none;
+}
+
+.stat-label {
+  color: var(--txt-muted);
+  font-weight: 500;
+}
+
+.stat-val {
+  font-weight: 600;
+  color: var(--txt-dark);
+}
+
+.stat-val.green { color: var(--txt-green); }
+.stat-val.red   { color: var(--txt-red); }
+.stat-val.plum  { color: var(--plum); }
+.stat-val.blue  { color: var(--txt-blue); }
+.stat-val.warn  { color: #D97706; }
+
+/* ── TIMELINE (ui.js) ────────────────────────── */
+.timeline-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--border);
+  font-size: 13px;
+}
+
+.timeline-item:last-child {
+  border-bottom: none;
+}
+
+.timeline-data {
+  color: var(--txt-muted);
+  font-size: 12px;
+  min-width: 70px;
+}
+
+.timeline-item-nome {
+  flex: 1;
+  font-weight: 500;
+}
+
+.timeline-valor {
+  font-weight: 600;
+  color: var(--txt-green);
+}
+
+/* ── FORM BLOCOS (ui.js) ─────────────────────── */
+.form-bloco {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px;
+  margin-bottom: 14px;
+  background: var(--ghost);
+}
+
+.form-bloco-titulo {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .5px;
+  color: var(--plum);
+  margin-bottom: 10px;
+}
+
+/* ── PGTO TOTALS BAR (ui.js) ─────────────────── */
+.pgto-totals {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  padding: 12px 16px;
+  background: var(--ghost);
+  border-radius: var(--radius);
+  margin-top: 14px;
+  align-items: center;
+}
+
+.pgto-total-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.pgto-total-label {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .3px;
+  color: var(--txt-muted);
+}
+
+.pgto-total-valor {
+  font-weight: 600;
+  color: var(--txt-dark);
+  font-size: 14px;
+}
+
+.pgto-total-item.total-geral .pgto-total-valor {
+  color: var(--txt-green);
+  font-size: 16px;
+}
+
+/* ── AGENDA ROW (ui.js) ──────────────────────── */
+.agenda-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--border);
+}
+
+.agenda-row-horario {
+  min-width: 50px;
+  text-align: center;
+}
+
+.agenda-row-cliente {
+  flex: 1;
+  font-weight: 600;
+}
+
+.agenda-row-servico {
+  color: var(--txt-muted);
+  font-size: 12px;
+}
+
+/* ── EMPTY STATE ─────────────────────────────── */
+.empty-state {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--txt-muted);
+}
+
+.empty-icon {
+  font-size: 36px;
+  opacity: .3;
+  margin-bottom: 12px;
+}
+
+/* ── DASHBOARD RESPONSIVE ────────────────────── */
+@media (max-width: 768px) {
+  .dashboard-grid-2 {
+    grid-template-columns: 1fr !important;
+  }
+
+  .kpi-mini-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+}
+
+@media (max-width: 480px) {
+  .kpi-mini-grid {
+    grid-template-columns: 1fr;
+  }
+}

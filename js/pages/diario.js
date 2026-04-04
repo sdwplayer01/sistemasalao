@@ -50,7 +50,7 @@ export function renderDiario(container) {
 
 function renderTabHoje(container, lista) {
   if (lista.length === 0) {
-    container.innerHTML = emptyState('Nenhum lançamento hoje.', 'Ainda não há movimentações registadas para este dia.');
+    container.innerHTML = emptyState('Nenhum lançamento hoje.', 'Ainda não há movimentações registradas para este dia.');
     return;
   }
 
@@ -69,10 +69,10 @@ function renderTabHoje(container, lista) {
         <tbody>
           ${lista.map(item => `
             <tr>
-              <td><strong>${item.cliente}</strong></td>
-              <td><span class="badge">${item.item}</span></td>
-              <td>${R$(item.valor)}</td>
-              <td><span class="badge-outline">${item.formaPgto}</span></td>
+              <td><strong>${item.cliente || '—'}</strong></td>
+              <td><span class="badge">${item.servicoNome || item.produtoNome || '—'}</span></td>
+              <td>${R$(item.precoCobrado)}</td>
+              <td><span class="badge-outline">${item.formaPagamento || '—'}</span></td>
               <td style="text-align:right">
                 <button class="btn-icon" onclick="window.__utils.excluirLancamento('${item.id}')">
                   <i data-lucide="trash-2"></i>
@@ -148,18 +148,23 @@ function abrirModalLancamento(editId = null) {
 
   document.getElementById('btn-save-lan').onclick = () => {
     const cliente = document.getElementById('f-cliente').value.trim();
-    const valor = parseFloat(document.getElementById('f-valor').dataset.rawValue) || 0;
+    const rawVal = document.getElementById('f-valor').dataset.rawValue;
+    const precoCobrado = parseFloat(rawVal) || 0;
 
-    if (!cliente || valor <= 0) return toast('Preencha os campos obrigatórios.', 'error');
+    if (!cliente || precoCobrado <= 0) return toast('Preencha os campos obrigatórios.', 'error');
+
+    const opt  = selectItem.options[selectItem.selectedIndex];
+    const tipo = opt?.dataset.tipo || 'servico';
 
     const novo = {
-      id: Date.now().toString(),
       data: hoje(),
       cliente,
-      item: selectItem.value,
-      tipo: selectItem.options[selectItem.selectedIndex].dataset.tipo,
-      valor,
-      formaPgto: document.getElementById('f-pgto').value
+      servicoNome:    tipo === 'servico' ? selectItem.value : '',
+      produtoNome:    tipo === 'produto' ? selectItem.value : '',
+      tipo,
+      precoCobrado,
+      formaPagamento: document.getElementById('f-pgto').value,
+      qtd: 1,
     };
 
     Diario.add(novo);

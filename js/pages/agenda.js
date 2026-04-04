@@ -1,20 +1,11 @@
-import * as UI from '../ui.js';
 // ═══════════════════════════════════════════════════════
 // pages/agenda.js — Agenda com WhatsApp integrado
 // ═══════════════════════════════════════════════════════
 import { Agenda, Servicos, Config, MESES } from '../storage.js';
 import {
   fmtData, hoje, diaSemana, formatarTelefone,
-  limparTelefone, toast, openModal, closeModal, emptyState
+  limparTelefone, linkWA, toast, openModal, closeModal, emptyState
 } from '../utils.js';
-
-// ── Helpers de WhatsApp com mensagem pré-preenchida ────
-function linkWAMsg(telefone, mensagem) {
-  let n = limparTelefone(telefone);
-  if (n.length > 11 && n.startsWith('55')) n = n.slice(2);
-  if (n.length < 10 || n.length > 11) return null;
-  return `https://wa.me/55${n}?text=${encodeURIComponent(mensagem)}`;
-}
 
 function msgConfirmacao(nome, data, horario, nomeSalao) {
   const dataFmt = data ? fmtData(data) : '—';
@@ -93,7 +84,7 @@ function renderAmanha(cfg) {
           ${amanha.map(a => {
     const tel = limparTelefone(a.telefone || '');
     const url = tel.length >= 10
-      ? linkWAMsg(tel, msgLembrete(a.cliente || 'Cliente', a.horario || '', cfg.nomeSalao))
+      ? linkWA(tel, msgLembrete(a.cliente || 'Cliente', a.horario || '', cfg.nomeSalao))
       : null;
     return `<div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
               <span class="fw-600" style="min-width:140px">${a.cliente || '—'}</span>
@@ -200,9 +191,9 @@ function rowHTML(e, cfg) {
   const tel = limparTelefone(e.telefone || '');
   const temTel = tel.length >= 10;
 
-  const urlConfirm = temTel ? linkWAMsg(tel, msgConfirmacao(e.cliente || 'Cliente', e.data, e.horario || '', cfg.nomeSalao)) : null;
-  const urlLembrete = temTel ? linkWAMsg(tel, msgLembrete(e.cliente || 'Cliente', e.horario || '', cfg.nomeSalao)) : null;
-  const urlAgradec = temTel ? linkWAMsg(tel, msgAgradecimento(e.cliente || 'Cliente', cfg.nomeSalao)) : null;
+  const urlConfirm = temTel ? linkWA(tel, msgConfirmacao(e.cliente || 'Cliente', e.data, e.horario || '', cfg.nomeSalao)) : null;
+  const urlLembrete = temTel ? linkWA(tel, msgLembrete(e.cliente || 'Cliente', e.horario || '', cfg.nomeSalao)) : null;
+  const urlAgradec = temTel ? linkWA(tel, msgAgradecimento(e.cliente || 'Cliente', cfg.nomeSalao)) : null;
 
   const statusColors = {
     agendado: 'badge-plum',
@@ -340,9 +331,9 @@ function abrirForm(entry, svcs, profs, cfg, onSave) {
     const n = limparTelefone(tel);
     if (n.length < 10) { preview.innerHTML = ''; return; }
 
-    const urlC = linkWAMsg(n, msgConfirmacao(cliente, data, horario, cfg.nomeSalao));
-    const urlL = linkWAMsg(n, msgLembrete(cliente, horario, cfg.nomeSalao));
-    const urlA = linkWAMsg(n, msgAgradecimento(cliente, cfg.nomeSalao));
+    const urlC = linkWA(n, msgConfirmacao(cliente, data, horario, cfg.nomeSalao));
+    const urlL = linkWA(n, msgLembrete(cliente, horario, cfg.nomeSalao));
+    const urlA = linkWA(n, msgAgradecimento(cliente, cfg.nomeSalao));
 
     preview.innerHTML = `
       <div style="font-size:11px;font-weight:600;color:var(--plum);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">
