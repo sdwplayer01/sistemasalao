@@ -86,13 +86,11 @@ function renderForm(ano, mesIdx) {
   applyMoneyMask(formEl);
   initIcons();
 
-  // Event delegation para remover linhas "Outros Custos"
   document.getElementById('outrosContainer').addEventListener('click', e => {
     const btn = e.target.closest('[data-remove-outro]');
     if (!btn) return;
     btn.closest('[data-outro]').remove();
-    // Dispara recálculo do total
-    document.getElementById('cf-aluguel')?.dispatchEvent(new Event('input'));
+    calcTotal(campos);
   });
 
   document.getElementById('btnAddOutro').onclick = () => {
@@ -118,23 +116,42 @@ function outroRow(o, i) {
   </div>`;
 }
 
+// ── Lê o valor numérico de um input [data-money] ──────
+// Prefere dataset.rawValue (já processado pelo blur da máscara).
+// Se ainda não existir (usuário ainda está digitando), converte
+// o texto visível limpando separadores pt-BR.
+function lerValor(input) {
+  if (!input) return 0;
+  const raw = parseFloat(input.dataset.rawValue);
+  if (!isNaN(raw) && raw > 0) return raw;
+  // Converte "1.234,56" → 1234.56
+  const txt = (input.value || '').replace(/\./g, '').replace(',', '.');
+  return parseFloat(txt) || 0;
+}
+
+function calcTotal(campos) {
+  let t = campos.reduce((s, [k]) => s + lerValor(document.getElementById(`cf-${k}`)), 0);
+  document.querySelectorAll('.outro-val').forEach(inp => { t += lerValor(inp); });
+  const el1 = document.getElementById('cfTotal');
+  const el2 = document.getElementById('cfTotalBadge');
+  if (el1) el1.textContent = R$(t);
+  if (el2) el2.textContent = R$(t);
+}
+
 function bindTotalCalc(campos) {
-  const calc = () => {
-    let t = campos.reduce((s, [k]) => s + (parseFloat(document.getElementById(`cf-${k}`)?.dataset.rawValue) || 0), 0);
-    document.querySelectorAll('.outro-val').forEach(inp => t += (parseFloat(inp.dataset.rawValue) || 0));
-    document.getElementById('cfTotal').textContent = R$(t);
-    document.getElementById('cfTotalBadge').textContent = R$(t);
-  };
-  document.querySelectorAll('[data-money]').forEach(inp => inp.addEventListener('input', calc));
+  document.querySelectorAll('[data-money]').forEach(inp => {
+    inp.addEventListener('input', () => calcTotal(campos));
+    inp.addEventListener('blur', () => calcTotal(campos));
+  });
 }
 
 function salvarCustos(key, campos, mesIdx, ano) {
   const data = { outros: [] };
-  campos.forEach(([k]) => data[k] = parseFloat(document.getElementById(`cf-${k}`).dataset.rawValue) || 0);
+  campos.forEach(([k]) => data[k] = lerValor(document.getElementById(`cf-${k}`)));
 
   document.querySelectorAll('[data-outro]').forEach(row => {
     const desc = row.querySelector('.outro-desc').value.trim();
-    const valor = parseFloat(row.querySelector('.outro-val').dataset.rawValue) || 0;
+    const valor = lerValor(row.querySelector('.outro-val'));
     if (desc || valor) data.outros.push({ desc, valor });
   });
 
