@@ -107,7 +107,11 @@ export function openModal(title, bodyHTML, footerHTML = '') {
   document.getElementById('modalFooter').innerHTML   = footerHTML;
   document.getElementById('modalOverlay').classList.add('open');
   // Lucide: re-renderiza ícones dentro do modal
-  if (window.lucide) window.lucide.createIcons();
+  try {
+    if (window.lucide) window.lucide.createIcons();
+  } catch (e) {
+    console.error("Lucide Error: ", e);
+  }
 }
 
 export function closeModal() {
@@ -137,7 +141,10 @@ export function emptyState(msg = 'Nenhum dado encontrado.') {
   </div>`;
 }
 
-// Renderiza ícones Lucide após injeção de HTML dinâmico
 export function initIcons() {
-  if (window.lucide) window.lucide.createIcons();
+  try {
+    if (window.lucide) window.lucide.createIcons();
+  } catch (e) {
+    console.warn("Lucide Error:", e);
+  }
 }

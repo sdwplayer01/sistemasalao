@@ -1,35 +1,34 @@
 // ═══════════════════════════════════════════════════════
 // app.js — Roteador + autenticação + boot instantâneo
-// v3.0: Offline-first / tema claro-escuro / sync silencioso
+// v3.1: Máscaras automáticas + Ícones Otimizados
 // ═══════════════════════════════════════════════════════
-import { renderDashboard }     from './pages/dashboard.js'
-import { renderAgenda }        from './pages/agenda.js'
-import { renderDiario }        from './pages/diario.js'
-import { renderServicos }      from './pages/servicos.js'
-import { renderCustos }        from './pages/custos.js'
-import { renderReceitas }      from './pages/receitas.js'
-import { renderControle }      from './pages/controle.js'
+import { renderDashboard } from './pages/dashboard.js'
+import { renderAgenda } from './pages/agenda.js'
+import { renderDiario } from './pages/diario.js'
+import { renderServicos } from './pages/servicos.js'
+import { renderCustos } from './pages/custos.js'
+import { renderReceitas } from './pages/receitas.js'
+import { renderControle } from './pages/controle.js'
 import { renderConfiguracoes } from './pages/configuracoes.js'
-import { renderClientes }      from './pages/clientes.js'
-import { renderLogin }         from './pages/login.js'
-import { Config, loadFromSupabase, clearLocalData } from './storage.js'
+import { renderClientes } from './pages/clientes.js'
+import { renderLogin } from './pages/login.js'
+import { Config, loadFromSupabase, clearLocalData, MESES } from './storage.js'
 import { supabase, getSession, logout } from './supabase.js'
-import { closeModal, openModal, toast, initIcons } from './utils.js'
-import { MESES } from './storage.js'
+import { closeModal, openModal, toast, initIcons, applyMoneyMask, applyPhoneMask } from './utils.js'
 
 // Expõe utils para o dashboard (onboarding modal)
 window.__utils = { openModal, closeModal }
 
 const PAGES = {
-  dashboard:    { render: renderDashboard,    title: 'Dashboard' },
-  agenda:       { render: renderAgenda,       title: 'Agenda de Horários' },
-  diario:       { render: renderDiario,       title: 'Diário / Caixa' },
-  servicos:     { render: renderServicos,     title: 'Serviços & Produtos' },
-  custos:       { render: renderCustos,       title: 'Custos Fixos' },
-  receitas:     { render: renderReceitas,     title: 'Receitas do Espaço' },
-  controle:     { render: renderControle,     title: 'Controle Anual' },
-  clientes:     { render: renderClientes,     title: 'CRM de Clientes' },
-  configuracoes:{ render: renderConfiguracoes, title: 'Configurações' },
+  dashboard: { render: renderDashboard, title: 'Dashboard' },
+  agenda: { render: renderAgenda, title: 'Agenda de Horários' },
+  diario: { render: renderDiario, title: 'Diário / Caixa' },
+  servicos: { render: renderServicos, title: 'Serviços & Produtos' },
+  custos: { render: renderCustos, title: 'Custos Fixos' },
+  receitas: { render: renderReceitas, title: 'Receitas do Espaço' },
+  controle: { render: renderControle, title: 'Controle Anual' },
+  clientes: { render: renderClientes, title: 'CRM de Clientes' },
+  configuracoes: { render: renderConfiguracoes, title: 'Configurações' },
 }
 
 let _paginaAtual = 'dashboard'
@@ -41,13 +40,11 @@ function applyTheme(theme) {
 }
 
 function loadTheme() {
-  // Aplica imediatamente na abertura — antes do DOMContentLoaded
   const saved = localStorage.getItem('salao_theme') || 'light'
   applyTheme(saved)
   return saved
 }
 
-// Roda antes do DOMContentLoaded para evitar flash de tema errado
 loadTheme()
 
 // ── Navegação ──────────────────────────────────────────
@@ -59,29 +56,31 @@ export function navigateTo(page) {
     document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'))
 
     const pageEl = document.getElementById(`page-${page}`)
-    const navEl  = document.querySelector(`[data-page="${page}"]`)
+    const navEl = document.querySelector(`[data-page="${page}"]`)
 
     if (pageEl) {
       pageEl.classList.add('active')
-      // Placeholder leve em vez de texto
-      pageEl.innerHTML = `<div style="display:flex;align-items:center;justify-content:center;padding:60px;gap:10px;color:var(--txt-muted)">
-        <i data-lucide="loader-2" style="width:18px;height:18px;animation:spin .8s linear infinite"></i>
-        Carregando...
-      </div>`
+      // Loader minimalista
+      pageEl.innerHTML = `
+        <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:100px;gap:15px;color:var(--plum-medium);opacity:0.6">
+          <i data-lucide="loader-2" style="width:24px;height:24px;animation:spin .8s linear infinite"></i>
+          <span style="font-size:13px;letter-spacing:1px">CARREGANDO</span>
+        </div>`
+
+      // Renderiza o conteúdo da página
       PAGES[page].render(pageEl)
+
+      // Inicializa utilitários na nova página
       initIcons()
+      applyMoneyMask(pageEl)
+      applyPhoneMask(pageEl)
     }
 
     if (navEl) navEl.classList.add('active')
 
-    // const titleEl = document.getElementById('topBarTitle')
-    // if (titleEl) titleEl.textContent = PAGES[page].title
-
     _paginaAtual = page
-    // Item 2: persiste a última página visitada
     localStorage.setItem('salao_last_page', page)
 
-    // Mobile: fecha sidebar
     if (window.innerWidth <= 768) {
       const sb = document.getElementById('sidebar');
       if (sb) sb.classList.remove('open');
@@ -95,25 +94,15 @@ export function navigateTo(page) {
   }
 }
 
-// ── show/hide ──────────────────────────────────────────
-function showApp()   { document.getElementById('page-login').style.display = 'none';  document.getElementById('app-shell').style.display = 'flex' }
-function showLogin() { document.getElementById('app-shell').style.display  = 'none'; document.getElementById('page-login').style.display = '' }
+// ── Visibilidade ───────────────────────────────────────
+function showApp() { document.getElementById('page-login').style.display = 'none'; document.getElementById('app-shell').style.display = 'flex' }
+function showLogin() { document.getElementById('app-shell').style.display = 'none'; document.getElementById('page-login').style.display = '' }
 
-// ── Init do app (pós-login) — INSTANT BOOT ────────────
+// ── Init do App ────────────────────────────────────────
 function initApp(user) {
-  showApp()
-
-  // 1. Aplica nome do salão do cache imediatamente
-  const pendingName = localStorage.getItem('salao_pending_name')
-  if (pendingName) {
-    Config.save({ nomeSalao: pendingName })
-    localStorage.removeItem('salao_pending_name')
-  }
-
   const cfg = Config.get()
 
-  // const nomeSalaoEl = document.getElementById('sidebarNomeSalao')
-  // if (nomeSalaoEl) nomeSalaoEl.textContent = cfg.nomeSalao || 'Meu Salão'
+  // Atualiza Nome do Salão e Email
   const topBarNomeSalaoElement = document.getElementById('topBarNomeSalao');
   if (topBarNomeSalaoElement) topBarNomeSalaoElement.textContent = cfg.nomeSalao || 'Salão Premium';
 
@@ -126,22 +115,19 @@ function initApp(user) {
     badgeEl.textContent = `${MESES[now.getMonth()]} ${now.getFullYear()}`
   }
 
-  // 2. Restaura última página visitada (Item 2 — persistência)
+  // Restaura última página ou vai para dashboard
   const _ultimaPagina = localStorage.getItem('salao_last_page') || 'dashboard'
   navigateTo(PAGES[_ultimaPagina] ? _ultimaPagina : 'dashboard')
 
-  // 3. Sync com Supabase em background — NÃO bloqueia a tela
   _syncBackground()
 
-  // ── Navegação ──────────────────────────────────────
+  // Eventos de Navegação
   document.querySelectorAll('.nav-item').forEach(btn => {
     btn.onclick = () => navigateTo(btn.dataset.page)
   })
 
-  // ── Sidebar: collapse (desktop) e open (mobile) ────
+  // Sidebar e Menu
   const sidebar = document.getElementById('sidebar')
-
-  // Item 1: collapsed só funciona no desktop
   if (window.innerWidth > 768 && localStorage.getItem('sidebarCollapsed') === 'true') {
     sidebar.classList.add('collapsed')
   }
@@ -149,7 +135,6 @@ function initApp(user) {
   const btnMenu = document.getElementById('btnMenu')
   if (btnMenu) {
     btnMenu.onclick = () => {
-      // Item 1: collapsed só no desktop; mobile usa open/close
       if (window.innerWidth > 768) {
         sidebar.classList.toggle('collapsed')
         localStorage.setItem('sidebarCollapsed', sidebar.classList.contains('collapsed'))
@@ -164,64 +149,50 @@ function initApp(user) {
     btnMenuMobile.onclick = () => sidebar.classList.toggle('open')
   }
 
-  // Fecha sidebar mobile ao clicar fora
-  document.addEventListener('click', e => {
-    if (window.innerWidth <= 768 &&
-        !sidebar.contains(e.target) &&
-        btnMenuMobile && !btnMenuMobile.contains(e.target)) {
-      sidebar.classList.remove('open')
-    }
-  })
-
-  // ── Modal ──────────────────────────────────────────
+  // Modal
   document.getElementById('modalClose').onclick = closeModal
   document.getElementById('modalOverlay').onclick = e => {
     if (e.target === document.getElementById('modalOverlay')) closeModal()
   }
 
-
-
-  // ── Logout ─────────────────────────────────────────
+  // Logout
   document.getElementById('btnLogout').onclick = async () => {
     if (!confirm('Sair do sistema?')) return
     await logout()
     clearLocalData()
     showLogin()
     renderLogin(onLoginSuccess)
-    toast('Ate logo!', 'default')
+    toast('Até logo!', 'default')
   }
 
   initIcons()
+  showApp()
 }
 
-// ── Sync background (não bloqueia UI) ─────────────────
+// ── Sync Background ────────────────────────────────────
 async function _syncBackground() {
   try {
     await loadFromSupabase()
-    // Após sync silencioso, recarrega a página atual apenas se for o dashboard
-    // (dados operacionais do dia podem ter mudado em outro dispositivo)
     if (_paginaAtual === 'dashboard') {
       const pageEl = document.getElementById('page-dashboard')
       if (pageEl) {
         renderDashboard(pageEl)
         initIcons()
+        applyMoneyMask(pageEl)
       }
     }
   } catch (e) {
-    // Falha silenciosa — usuário já está usando com dados locais
     console.warn('Sync background falhou:', e?.message || e)
   }
 }
 
-// ── Callback pós-login ─────────────────────────────────
 function onLoginSuccess(user) {
-  initApp(user) // NÃO usa await — boot instantâneo
+  initApp(user)
 }
 
-// ── Entry point ────────────────────────────────────────
+// ── Entry Point ────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', async () => {
-
-  // Adiciona classe de animação de spin para ícone de carregamento
+  // Estilo do loader
   if (!document.getElementById('spinStyle')) {
     const style = document.createElement('style')
     style.id = 'spinStyle'
@@ -229,7 +200,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.head.appendChild(style)
   }
 
-  // Escuta mudanças de sessão
   supabase.auth.onAuthStateChange(async (event, session) => {
     if (event === 'SIGNED_IN' && session?.user) {
       initApp(session.user)
@@ -239,16 +209,8 @@ document.addEventListener('DOMContentLoaded', async () => {
       showLogin()
       renderLogin(onLoginSuccess)
     }
-    if (event === 'PASSWORD_RECOVERY') {
-      const nova = prompt('Digite sua nova senha (mínimo 6 caracteres):')
-      if (nova && nova.length >= 6) {
-        const { error } = await supabase.auth.updateUser({ password: nova })
-        if (!error) toast('Senha atualizada com sucesso! ✓', 'success')
-      }
-    }
   })
 
-  // Verifica sessão existente
   const session = await getSession()
   if (session?.user) {
     initApp(session.user)
@@ -256,28 +218,24 @@ document.addEventListener('DOMContentLoaded', async () => {
     showLogin()
     renderLogin(onLoginSuccess)
   }
-})
+});
 
-// ── API pública para páginas que precisam navegar ─────
-window.__navigateTo = navigateTo
-window.__applyTheme = applyTheme
-window.__getTheme   = () => localStorage.getItem('salao_theme') || 'light'
-
-// Mensagens rotativas Premium
-;(function () {
+// Mensagens rotativas (Premium)
+; (function () {
   const container = document.getElementById('rotatingMsgBar');
   if (!container) return;
-
   const messages = container.querySelectorAll('.rotating-msg-text');
   let index = 0;
-
   if (!messages.length) return;
 
   setInterval(() => {
     messages[index].classList.remove('is-active');
-
     index = (index + 1) % messages.length;
-
     messages[index].classList.add('is-active');
-  }, 5000);
+  }, 6000);
 })();
+
+// API Pública
+window.__navigateTo = navigateTo
+window.__applyTheme = applyTheme
+window.__getTheme = () => localStorage.getItem('salao_theme') || 'light'

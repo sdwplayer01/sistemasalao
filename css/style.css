@@ -131,17 +131,18 @@
 
 html {
   width: 100%;
-  min-height: 100vh;
+  height: 100%;
+  margin: 0;
   background-color: var(--bg);
 }
 
 body {
   width: 100%;
-  min-height: 100vh;
+  height: 100%;
+  margin: 0;
   font-family: var(--font-sans);
   background-color: var(--bg);
   color: var(--txt-dark);
-  display: flex;
   font-size: 14px;
   line-height: 1.5;
   transition: background .25s, color .25s;
