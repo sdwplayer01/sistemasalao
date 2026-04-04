@@ -68,7 +68,11 @@ function _render(container) {
   const chartBg = gradientParts.length ? `conic-gradient(${gradientParts.join(', ')})` : 'var(--bg-soft)';
 
   // ── Render ────────────────────────────────────────
-  container.innerHTML = `
+  const msgBar = container.querySelector('#rotatingMsgBar');
+  container.innerHTML = '';
+  if (msgBar) container.appendChild(msgBar);
+
+  container.insertAdjacentHTML('beforeend', `
     <div class="section-title">Dashboard — ${MESES[mesIdx]} ${ano}</div>
     <div class="section-sub">Visão geral do seu salão em tempo real.</div>
 

@@ -2618,3 +2618,22 @@ textarea {
     grid-template-columns: 1fr;
   }
 }
+/* Ajuste do message bar movido para o dashboard */
+#page-dashboard:not(.active) {
+  display: none !important;
+}
+
+#page-dashboard.active {
+  display: flex !important;
+  flex-direction: column;
+}
+
+#rotatingMsgBar {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 40px;
+  margin-top: 0 !important; /* Limpa a margem que tinha antes na main-content */
+  margin-bottom: 24px;
+}
