@@ -7,6 +7,7 @@ import {
   R$, hoje, toast, openModal, closeModal,
   emptyState, applyMoneyMask, initIcons
 } from '../utils.js';
+import { resumoCards } from '../ui.js';
 
 let _tabAtiva = 'hoje'; // 'hoje' | 'historico'
 
@@ -72,8 +73,21 @@ function renderTabHoje(container, lista) {
     return;
   }
 
+  // Cálculos para o resumo hoje
+  const fat = lista.reduce((s, e) => s + (parseFloat(e.precoCobrado) || 0), 0);
+  const fatSvc = lista.filter(e => e.tipo === 'servico' || !e.tipo).reduce((s, e) => s + (parseFloat(e.precoCobrado) || 0), 0);
+  const fatProd = lista.filter(e => e.tipo === 'produto').reduce((s, e) => s + (parseFloat(e.precoCobrado) || 0), 0);
+  const atend = lista.length;
+
   container.innerHTML = `
-    <div class="card">
+    <!-- Resumo do dia -->
+    ${resumoCards([
+    { label: 'Caixa Hoje', value: R$(fat), cor: 'green', sub: atend + ' atendimento' + (atend !== 1 ? 's' : '') },
+    { label: 'Serviços', value: R$(fatSvc), cor: 'plum' },
+    { label: 'Produtos', value: R$(fatProd), cor: 'rose' }
+  ])}
+
+    <div class="card mt-16">
       <table class="table">
         <thead>
           <tr>
