@@ -86,6 +86,15 @@ function renderForm(ano, mesIdx) {
   applyMoneyMask(formEl);
   initIcons();
 
+  // Event delegation para remover linhas "Outros Custos"
+  document.getElementById('outrosContainer').addEventListener('click', e => {
+    const btn = e.target.closest('[data-remove-outro]');
+    if (!btn) return;
+    btn.closest('[data-outro]').remove();
+    // Dispara recálculo do total
+    document.getElementById('cf-aluguel')?.dispatchEvent(new Event('input'));
+  });
+
   document.getElementById('btnAddOutro').onclick = () => {
     const c = document.getElementById('outrosContainer');
     const div = document.createElement('div');
@@ -104,7 +113,7 @@ function outroRow(o, i) {
     <div class="form-group"><input type="text" class="outro-desc" value="${o.desc || ''}" placeholder="Descrição" /></div>
     <div class="form-group flex-row" style="gap:8px;align-items:flex-end">
       <input type="text" class="outro-val" data-money inputmode="numeric" placeholder="0,00" value="${o.valor ? o.valor.toFixed(2).replace('.', ',') : ''}" data-raw-value="${o.valor || ''}" style="flex:1" />
-      <button class="btn btn-danger btn-icon" onclick="this.closest('[data-outro]').remove(); document.getElementById('cf-aluguel').dispatchEvent(new Event('input'))" style="flex-shrink:0"><i data-lucide="trash-2" style="width:14px;height:14px"></i></button>
+      <button class="btn btn-danger btn-icon" data-remove-outro style="flex-shrink:0"><i data-lucide="trash-2" style="width:14px;height:14px"></i></button>
     </div>
   </div>`;
 }

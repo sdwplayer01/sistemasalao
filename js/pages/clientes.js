@@ -118,7 +118,7 @@ function renderTabela(container) {
               <td class="fw-600 text-green">${R$(c.stats.fat)}</td>
               <td class="text-muted" style="font-size:12px">${fmtData(c.stats.ultimaVisita)}</td>
               <td class="td-right">
-                <button class="btn btn-icon-sm btn-secondary" onclick="window.__abrirPerfil('${c.nome}')">
+                <button class="btn btn-icon-sm btn-secondary" data-abrir-perfil="${c.nome}" title="Ver perfil">
                   <i data-lucide="user"></i>
                 </button>
               </td>
@@ -129,7 +129,12 @@ function renderTabela(container) {
     </div>
   `;
 
-  window.__abrirPerfil = (nome) => abrirPerfilModal(nome, () => renderClientes(container));
+  // Event delegation para abrir perfil — sem window.__abrirPerfil
+  el.addEventListener('click', e => {
+    const btn = e.target.closest('[data-abrir-perfil]');
+    if (!btn) return;
+    abrirPerfilModal(btn.dataset.abrirPerfil, () => renderClientes(container));
+  });
   initIcons();
 }
 
@@ -163,10 +168,11 @@ function abrirPerfilModal(nome, onSave) {
   `;
 
   openModal(`Perfil: ${nome}`, body, `
-    <button class="btn btn-secondary" onclick="window.__utils.closeModal()">Fechar</button>
+    <button class="btn btn-secondary" id="btnFecharPerfil">Fechar</button>
     <button class="btn btn-primary" id="btnSalvarObs">Salvar Ficha</button>
   `);
 
+  document.getElementById('btnFecharPerfil').onclick = closeModal;
   document.getElementById('btnSalvarObs').onclick = () => {
     Clientes.upsert(nome, { obs: document.getElementById('cp-obs').value.trim() });
     toast('Ficha técnica atualizada!');
