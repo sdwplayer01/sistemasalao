@@ -1,7 +1,10 @@
-import { Diario, Servicos, Produtos, Clientes, Config, MESES } from '../storage.js';
+// ═══════════════════════════════════════════════════════
+// js/pages/diario.js — Diário / Frente de Caixa
+// Fix: excluirLancamento via event delegation (sem window.__utils)
+// ═══════════════════════════════════════════════════════
+import { Diario, Servicos, Produtos, Config, MESES } from '../storage.js';
 import {
-  R$, pct, fmtData, hoje, diaSemana, formatarTelefone,
-  linkWA, limparTelefone, toast, openModal, closeModal,
+  R$, hoje, toast, openModal, closeModal,
   emptyState, applyMoneyMask, initIcons
 } from '../utils.js';
 
@@ -44,10 +47,25 @@ export function renderDiario(container) {
     renderTabHistorico(content, data);
   }
 
-  document.getElementById('btn-novo-lancamento').onclick = () => abrirModalLancamento();
+  document.getElementById('btn-novo-lancamento').onclick = () => abrirModalLancamento(container);
+
+  // ── Event delegation para excluir ────────────────────
+  // Evita crash de window.__utils ao usar data-excluir-id nos botões
+  content.addEventListener('click', e => {
+    const btn = e.target.closest('[data-excluir-id]');
+    if (!btn) return;
+    const id = Number(btn.dataset.excluirId);
+    if (confirm('Excluir este registro?')) {
+      Diario.remove(id);
+      toast('Registro removido.');
+      renderDiario(container); // re-render no lugar
+    }
+  });
+
   initIcons();
 }
 
+// ── Tab: Hoje ─────────────────────────────────────────
 function renderTabHoje(container, lista) {
   if (lista.length === 0) {
     container.innerHTML = emptyState('Nenhum lançamento hoje.', 'Ainda não há movimentações registradas para este dia.');
@@ -74,7 +92,7 @@ function renderTabHoje(container, lista) {
               <td>${R$(item.precoCobrado)}</td>
               <td><span class="badge-outline">${item.formaPagamento || '—'}</span></td>
               <td style="text-align:right">
-                <button class="btn-icon" onclick="window.__utils.excluirLancamento('${item.id}')">
+                <button class="btn-icon" data-excluir-id="${item.id}" title="Excluir registro">
                   <i data-lucide="trash-2"></i>
                 </button>
               </td>
@@ -86,14 +104,17 @@ function renderTabHoje(container, lista) {
   `;
 }
 
+// ── Tab: Histórico ────────────────────────────────────
 function renderTabHistorico(container, lista) {
-  // Lógica de histórico simplificada para o exemplo
   container.innerHTML = `<div class="card"><p style="padding:20px; color:var(--txt-muted)">O histórico completo pode ser visualizado no módulo de Controle Anual.</p></div>`;
 }
 
-function abrirModalLancamento(editId = null) {
-  const svcs = Servicos.getAll();
+// ── Modal de Novo Lançamento ──────────────────────────
+function abrirModalLancamento(container) {
+  const svcs  = Servicos.getAll();
   const prods = Produtos.getAll();
+  const cfg   = Config.get();
+  const formas = cfg.formasPagamento || ['Dinheiro', 'Pix', 'Cartão Débito', 'Cartão Crédito'];
 
   const body = `
     <div class="form-grid">
@@ -104,60 +125,63 @@ function abrirModalLancamento(editId = null) {
       <div class="form-group">
         <label>Item (Serviço ou Produto)</label>
         <select id="f-item">
-          <optgroup label="Serviços">
-            ${svcs.map(s => `<option value="${s.nome}" data-tipo="servico" data-preco="${s.precoVenda}">${s.nome}</option>`).join('')}
-          </optgroup>
-          <optgroup label="Produtos">
-            ${prods.map(p => `<option value="${p.nome}" data-tipo="produto" data-preco="${p.precoVenda}">${p.nome}</option>`).join('')}
-          </optgroup>
+          <option value="" data-tipo="" data-preco="0">— Selecione —</option>
+          ${svcs.length ? `<optgroup label="Serviços">
+            ${svcs.map(s => `<option value="${s.nome}" data-tipo="servico" data-preco="${s.precoVenda || 0}">${s.nome}</option>`).join('')}
+          </optgroup>` : ''}
+          ${prods.length ? `<optgroup label="Produtos">
+            ${prods.map(p => `<option value="${p.nome}" data-tipo="produto" data-preco="${p.precoVenda || 0}">${p.nome}</option>`).join('')}
+          </optgroup>` : ''}
         </select>
       </div>
       <div class="form-group">
-        <label>Valor Total</label>
-        <input type="text" id="f-valor" data-money inputmode="numeric">
+        <label>Valor Cobrado</label>
+        <input type="text" id="f-valor" data-money inputmode="numeric" placeholder="0,00">
       </div>
       <div class="form-group">
         <label>Forma de Pagamento</label>
         <select id="f-pgto">
-          <option>Dinheiro</option>
-          <option>Pix</option>
-          <option>Cartão Débito</option>
-          <option>Cartão Crédito</option>
+          ${formas.map(f => `<option>${f}</option>`).join('')}
         </select>
       </div>
     </div>
   `;
 
   const footer = `
-    <button class="btn btn-secondary" onclick="window.__utils.closeModal()">Cancelar</button>
+    <button class="btn btn-secondary" id="btn-cancel-lan">Cancelar</button>
     <button class="btn btn-primary" id="btn-save-lan">Salvar Lançamento</button>
   `;
 
   openModal('Novo Atendimento', body, footer);
   applyMoneyMask(document.getElementById('modalBody'));
 
-  // Auto-preenche valor ao mudar item
+  document.getElementById('btn-cancel-lan').onclick = closeModal;
+
+  // Auto-preenche valor ao selecionar item
   const selectItem = document.getElementById('f-item');
   selectItem.onchange = () => {
     const opt = selectItem.options[selectItem.selectedIndex];
-    const inputValor = document.getElementById('f-valor');
     const preco = parseFloat(opt.dataset.preco) || 0;
-    inputValor.value = preco.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
-    inputValor.dataset.rawValue = preco;
+    if (preco > 0) {
+      const inputValor = document.getElementById('f-valor');
+      inputValor.value = preco.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+      inputValor.dataset.rawValue = preco;
+    }
   };
 
   document.getElementById('btn-save-lan').onclick = () => {
-    const cliente = document.getElementById('f-cliente').value.trim();
-    const rawVal = document.getElementById('f-valor').dataset.rawValue;
+    const cliente     = document.getElementById('f-cliente').value.trim();
+    const rawVal      = document.getElementById('f-valor').dataset.rawValue;
     const precoCobrado = parseFloat(rawVal) || 0;
 
-    if (!cliente || precoCobrado <= 0) return toast('Preencha os campos obrigatórios.', 'error');
+    if (!cliente)        return toast('Informe o nome do cliente.', 'error');
+    if (precoCobrado <= 0) return toast('Informe o valor cobrado.', 'error');
 
     const opt  = selectItem.options[selectItem.selectedIndex];
     const tipo = opt?.dataset.tipo || 'servico';
 
-    const novo = {
-      data: hoje(),
+    Diario.add({
+      data:           hoje(),
       cliente,
       servicoNome:    tipo === 'servico' ? selectItem.value : '',
       produtoNome:    tipo === 'produto' ? selectItem.value : '',
@@ -165,19 +189,10 @@ function abrirModalLancamento(editId = null) {
       precoCobrado,
       formaPagamento: document.getElementById('f-pgto').value,
       qtd: 1,
-    };
+    });
 
-    Diario.add(novo);
     toast('Lançamento salvo!');
     closeModal();
-    window.__navigateTo('diario');
+    renderDiario(container); // re-render in place, sem navigateTo
   };
 }
-
-window.__utils.excluirLancamento = (id) => {
-  if (confirm('Excluir este registo?')) {
-    Diario.remove(id);
-    window.__navigateTo('diario');
-    toast('Removido.');
-  }
-};

@@ -1,119 +1,81 @@
-# ✦ Salão Premium — Sistema Web de Gestão
+# ✦ Salão Premium — Sistema Web de Gestão (v3.0)
 
-Sistema web completo para gestão de salão de beleza.  
-Funciona 100% no navegador, sem servidor, sem instalação.
+Sistema web completo para gestão de salão de beleza focado em alta performance (offline-first com background sync), design atraente interativo e uma experiência "premium".
 
-## ✦ Funcionalidades
+## ✦ O que há de novo na v3.0?
 
-- **Dashboard** — KPIs anuais, gráfico de atendimentos, destaques automáticos
-- **Diário** — Registro diário com dropdown de serviços, link WhatsApp automático
-- **Serviços** — Tabela de precificação com preço Mínimo / Ideal / Premium
-- **Custos Fixos** — Lançamento mensal, resumo anual automático
-- **Receitas Internas** — Repasses e aluguéis que abatam o custo fixo
-- **Controle Anual** — Visão consolidada mês a mês
-- **Configurações** — Nome do salão, parâmetros, profissionais e categorias
-- **Export / Import** — Backup completo em JSON
+A versão 3.0 trouxe um redesenho de arquitetura estrutural e visual:
+- **Backend com Supabase**: Sincronização em nuvem, gestão global e login seguro.
+- **Offline-First**: Continua rodando de maneira instantânea usando *LocalStorage* e sincroniza os dados via background no Supabase quando a rede permite (com fallback e timeout robustos).
+- **Design System Aprimorado**: Migrado para uma abordagem orientada à paleta "Lilás e Dourado", com suporte completo a **Dark Mode** e layout 100% responsivo com Flexbox nativo para Desktop/Celular.
+- **Ícones Premium**: Transição de Emojis para vetores profissionais através do **Lucide Icons** / Phosphor Icons.
+- **Dashboard Redesenhado**: Incluindo novos *Widgets* operacionais de Destaques, e uma inovadora Barra de Lembretes Rotativa ("Lembretes de Operação").
+- **Novos Módulos Integrados**:
+  - Nova aba **Agenda**
+  - Nova aba **Clientes** (com histórico em CRM)
+  - Abordagem de cores focada em cada profissional.
 
-## 🚀 Publicar no GitHub Pages (passo a passo)
+## ✦ Módulos Disponíveis
 
-### 1. Criar o repositório
+1. **Dashboard** — KPIs anuais, gráfico de atendimentos, barra de mensagens de gestão com giro automático (carrossel de perguntas estratégicas).
+2. **Agenda** — Gerenciamento de horários para a organização diária.
+3. **Diário / Caixa** — Registro de atendimentos do dia, com cálculo unificado e embutido de **comissões por profissional**, suporte dinâmico a cores dos prestadores, e atalho automático para WhatsApp.
+4. **Serviços & Produtos** — Tabela de precificação com metodologias de Preço Mínimo, Ideal e Premium.
+5. **Custos Fixos** — Lançamento simplificado mensal para entendimento de sangrias.
+6. **Receitas Internas** — Controle de aluguéis e taxas de bancada/cadeira.
+7. **Controle Anual** — Visão financeira integral do resultado real de lucratividade (receitas, custos, saldos).
+8. **Clientes (CRM)** — Cadastro e busca de histórico com total de visitas, simplificando os contatos para retorno.
+9. **Configurações** — Painel de ajustes técnicos (nome do salão, profissionais, categorias) e de aparência (Light/Dark Mode e resetações de UI).
 
-1. Acesse [github.com](https://github.com) e faça login
-2. Clique em **"New repository"**
-3. Nome sugerido: `salao-premium`
-4. Deixe **Public** ✓
-5. Clique em **"Create repository"**
+## 🚀 Como Executar Localmente
 
-### 2. Fazer upload dos arquivos
+Você precisará de um servidor web rápido ou rodar internamente com o pacote *Live Server* do VS Code (pois agora operamos com arquivos JS em Módulos nativos (`type="module"`)).
 
-**Opção A — Interface web (mais fácil):**
-1. No repositório criado, clique em **"uploading an existing file"**
-2. Arraste a pasta inteira do projeto
-3. Clique em **"Commit changes"**
-
-**Opção B — Git (recomendado):**
-```bash
-cd salao-web
-git init
-git add .
-git commit -m "feat: salão premium v1.0"
-git branch -M main
-git remote add origin https://github.com/SEU_USUARIO/salao-premium.git
-git push -u origin main
-```
-
-### 3. Ativar o GitHub Pages
-
-1. No repositório, vá em **Settings → Pages**
-2. Em "Source", selecione: **Deploy from a branch**
-3. Branch: **main** / Folder: **/ (root)**
-4. Clique em **Save**
-5. Aguarde ~2 minutos
-6. Acesse: `https://SEU_USUARIO.github.io/salao-premium`
+1. Clone o repositório.
+2. Ajuste as credenciais no bloco de autenticação em nuvem (`js/supabase.js`), se necessário gerenciar seu próprio projeto:
+   ```javascript
+   export const SUPABASE_URL = "Sua URL";
+   export const SUPABASE_ANON_KEY = "Sua Chave Pública";
+   ```
+3. Abra a pasta através do Live Server.
+4. Faça o login.
 
 ---
 
-## 📂 Estrutura de Arquivos
+## 📂 Estrutura do Sistema
 
-```
+```text
 salao-web/
-├── index.html              ← Página principal
+├── index.html              ← App Shell + Menu Interativo Lateral (Sidebar)
 ├── css/
-│   └── style.css           ← Design system premium
+│   └── style.css           ← Motor de estilo: Variáveis globais, Temas, Layout Flex
 ├── js/
-│   ├── app.js              ← Roteador principal
-│   ├── storage.js          ← Banco de dados (localStorage)
-│   ├── utils.js            ← Funções utilitárias
+│   ├── app.js              ← Inicialização, Boot PWA Logic, e Roteamento Vanilla
+│   ├── storage.js          ← Arquitetura forte Offline-First & Sincronizador de Fila 
+│   ├── supabase.js         ← Client Supabase Integrado (Autenticação e Nuvem)
+│   ├── utils.js            ← Cálculos, Máscaras, e Geração Dinâmica de Dados
+│   ├── ui.js               ← Gerenciamento do DOM Geração de Alertas, e Toasts
 │   └── pages/
-│       ├── dashboard.js    ← Dashboard com KPIs
-│       ├── diario.js       ← Diário de atendimentos
-│       ├── servicos.js     ← Tabela de preços
-│       ├── custos.js       ← Custos fixos
-│       ├── receitas.js     ← Receitas internas
-│       ├── controle.js     ← Controle anual
-│       └── configuracoes.js← Configurações
+│       ├── login.js        ← Tela de Acesso Seguro (Auth)
+│       ├── dashboard.js    ← Painel Principal (Lógica de Gráficos e Widgets)
+│       ├── agenda.js       ← Painel Calendário
+│       ├── diario.js       ← Tabela Diária / Motor Comissão
+│       ├── servicos.js     ← Motor de Precificação
+│       ├── custos.js       ← Contas Gerais do Salão
+│       ├── receitas.js     ← Lançamento de Receitas Internas
+│       ├── controle.js     ← DRE Anual e Consolidado
+│       ├── clientes.js     ← Motor Novo de CRM & Repasses
+│       └── configuracoes.js← Edições de Categoria e Troca Tema
 └── README.md
 ```
 
-## 💾 Sobre os dados
+## 💾 Sobre os dados (Arquitetura)
 
-Os dados ficam salvos no **localStorage do navegador**.  
-Isso significa:
-- ✅ Funciona offline
-- ✅ Nenhum servidor necessário
-- ✅ Completamente gratuito
-- ⚠️ Os dados ficam no navegador daquele dispositivo
-- ⚠️ Limpar o cache do navegador apaga os dados
+O Salão Premium foi refeito visando velocidade e acessibilidade de ponta à ponta:
+- **Resiliência Nativa**: Tudo passa pelo `storage.js`. Ele faz proxy dos dados guardando-os no local do navegador e dispara requests para a nuvem de maneira assíncrona.
+- Os cálculos complexos (como despesas e comissões do diário) acontecem *Client-Side* reduzindo custos de API Serverless e melhorando a fluidez.
 
-**Faça backup regularmente** usando o botão **"↓ Exportar JSON"** na barra lateral.  
-Para transferir para outro dispositivo, exporte e depois importe no novo dispositivo.
+## 📱 Integração com WhatsApp (CRM)
 
-## 📱 WhatsApp
-
-O link do WhatsApp é gerado automaticamente ao cadastrar o telefone da cliente no Diário.  
-- Aceita número com ou sem máscara
-- Remove automaticamente parênteses, espaços e hífens
-- Exige DDD (10 ou 11 dígitos)
-- Abre o WhatsApp Web ou app diretamente
-
-## ⚙️ Personalização
-
-Para mudar as cores, edite as variáveis CSS no início de `css/style.css`:
-
-```css
-:root {
-  --noir:    #2C1654;  /* Header escuro */
-  --plum:    #7B4F8E;  /* Cor principal */
-  --rose:    #C4879A;  /* Destaques rosa */
-  --ivory:   #FFFDF7;  /* Fundo dos inputs */
-}
-```
-
-## 🔮 Próximos passos sugeridos
-
-- [ ] Integração com Supabase para dados em nuvem
-- [ ] Acesso multi-dispositivo (celular + computador)
-- [ ] Cadastro de clientes com histórico
-- [ ] Agendamento básico
-- [ ] Relatório mensal em PDF
-- [ ] Login com senha
+Acesso a apenas 1-click ao portfólio de clientes:  
+- Retira-se automaticamente dados indesejados (como espaço, hifens ou pontos) antes de disparar o link curto `wa.me`.
