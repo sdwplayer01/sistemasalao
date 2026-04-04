@@ -4,6 +4,7 @@ import {
   linkWA, limparTelefone, toast, openModal, closeModal,
   emptyState, applyMoneyMask, initIcons
 } from '../utils.js';
+import { resumoCards } from '../ui.js';
 
 let _tabAtiva = 'hoje'; // 'hoje' | 'historico'
 
@@ -45,17 +46,39 @@ export function renderDiario(container) {
   }
 
   document.getElementById('btn-novo-lancamento').onclick = () => abrirModalLancamento();
+
+  // Event Delegation para exclusão de lançamentos
+  content.onclick = (e) => {
+    const btn = e.target.closest('[data-excluir-id]');
+    if (btn) {
+      window.__utils.excluirLancamento(btn.dataset.excluirId);
+    }
+  };
+
   initIcons();
 }
 
 function renderTabHoje(container, lista) {
   if (lista.length === 0) {
-    container.innerHTML = emptyState('Nenhum lançamento hoje.', 'Ainda não há movimentações registadas para este dia.');
+    container.innerHTML = emptyState('Nenhum lançamento hoje.', 'Ainda não há lançamentos registrados para este dia.');
     return;
   }
 
+  // Cálculos para o resumo hoje
+  const fat     = lista.reduce((s, e) => s + (parseFloat(e.valor) || 0), 0);
+  const fatSvc  = lista.filter(e => e.tipo === 'servico' || !e.tipo).reduce((s, e) => s + (parseFloat(e.valor) || 0), 0);
+  const fatProd = lista.filter(e => e.tipo === 'produto').reduce((s, e) => s + (parseFloat(e.valor) || 0), 0);
+  const atend   = lista.length;
+
   container.innerHTML = `
-    <div class="card">
+    <!-- Resumo do dia -->
+    ${resumoCards([
+    { label: 'Caixa Hoje', value: R$(fat), cor: 'green', sub: atend + ' atendimento' + (atend !== 1 ? 's' : '') },
+    { label: 'Serviços', value: R$(fatSvc), cor: 'plum' },
+    { label: 'Produtos', value: R$(fatProd), cor: 'rose' }
+  ])}
+
+    <div class="card mt-16">
       <table class="table">
         <thead>
           <tr>
@@ -69,12 +92,12 @@ function renderTabHoje(container, lista) {
         <tbody>
           ${lista.map(item => `
             <tr>
-              <td><strong>${item.cliente}</strong></td>
-              <td><span class="badge">${item.item}</span></td>
+              <td><strong>${item.cliente || '—'}</strong></td>
+              <td><span class="badge">${item.item || '—'}</span></td>
               <td>${R$(item.valor)}</td>
-              <td><span class="badge-outline">${item.formaPgto}</span></td>
+              <td><span class="badge-outline">${item.formaPgto || '—'}</span></td>
               <td style="text-align:right">
-                <button class="btn-icon" onclick="window.__utils.excluirLancamento('${item.id}')">
+                <button class="btn-icon" data-excluir-id="${item.id}" title="Excluir lançamento">
                   <i data-lucide="trash-2"></i>
                 </button>
               </td>
