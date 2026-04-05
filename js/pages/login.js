@@ -250,7 +250,7 @@ export function renderLogin(onSuccess) {
 
     if (!salao) return mostrarErro(erroEl, 'Informe o nome do salão.')
     if (!email) return mostrarErro(erroEl, 'Informe o e-mail.')
-    if (senha.length < 6) return mostrarErro(erroEl, 'Senha deve ter pelo menos 6 caracteres.')
+    if (senha.length < 6) return mostrarErro(erroEl, 'A senha precisa ter pelo menos 6 caracteres.')
 
     setLoading('btnCadastrar', true)
     const { user, error } = await signupEmail(email, senha)
@@ -310,11 +310,11 @@ function setLoading(id, loading) {
 }
 
 function traduzirErro(msg) {
-  if (!msg) return 'Erro desconhecido.'
+  if (!msg) return 'Erro inesperado. Tente novamente.'
   if (msg.includes('Invalid login')) return 'E-mail ou senha incorretos.'
   if (msg.includes('Email not confirmed')) return 'Confirme seu e-mail antes de entrar.'
-  if (msg.includes('already registered')) return 'Este e-mail já está cadastrado. Tente entrar.'
-  if (msg.includes('Password should')) return 'Senha deve ter pelo menos 6 caracteres.'
+  if (msg.includes('already registered')) return 'Este e-mail já tem conta. Tente entrar.'
+  if (msg.includes('Password should')) return 'A senha precisa ter pelo menos 6 caracteres.'
   if (msg.includes('Unable to validate')) return 'Link inválido ou expirado.'
   return msg
 }

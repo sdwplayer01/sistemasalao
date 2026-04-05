@@ -27,7 +27,7 @@ const PAGES = {
   custos: { render: renderCustos, title: 'Custos Fixos' },
   receitas: { render: renderReceitas, title: 'Receitas do Espaço' },
   controle: { render: renderControle, title: 'Controle Anual' },
-  clientes: { render: renderClientes, title: 'CRM de Clientes' },
+  clientes: { render: renderClientes, title: 'Clientes' },
   configuracoes: { render: renderConfiguracoes, title: 'Configurações' },
 }
 

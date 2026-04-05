@@ -15,7 +15,7 @@ export function renderServicos(container) {
     <div class="section-header">
       <div>
         <div class="section-title">Serviços &amp; Produtos</div>
-        <div class="section-sub">Gestão de catálogo e precificação estratégica.</div>
+        <div class="section-sub">Cadastre serviços, produtos e defina seus preços.</div>
       </div>
       <button class="btn btn-primary" id="btn-novo-item">
         <i data-lucide="plus"></i> Novo ${_abaAtiva === 'servicos' ? 'Serviço' : 'Produto'}
@@ -41,7 +41,7 @@ export function renderServicos(container) {
   const lista   = _abaAtiva === 'servicos' ? svcs : prods;
 
   if (lista.length === 0) {
-    content.innerHTML = emptyState('Catálogo vazio.', 'Registre os seus itens para começar a vender.');
+    content.innerHTML = emptyState('Nenhum item cadastrado ainda.', 'Adicione serviços e produtos para começar a vender.');
   } else {
     content.innerHTML = lista.map(item => `
       <div class="card item-card">
@@ -66,10 +66,10 @@ export function renderServicos(container) {
     if (!btn) return;
     const id   = btn.dataset.excluirId;
     const tipo = btn.dataset.excluirTipo;
-    if (!confirm('Deseja excluir este item do catálogo?')) return;
+    if (!confirm('Remover este item do catálogo?')) return;
     if (tipo === 'servicos') Servicos.remove(Number(id));
     else Produtos.remove(Number(id));
-    toast('Item removido.');
+    toast('Item removido!');
     renderServicos(container); // re-render no lugar
   });
 
@@ -103,7 +103,7 @@ function abrirModalProduto(container) {
 
   const footer = `
     <button class="btn btn-secondary" id="pd-cancel">Cancelar</button>
-    <button class="btn btn-primary" id="pd-save">Salvar Produto</button>
+    <button class="btn btn-primary" id="pd-save">Salvar produto</button>
   `;
 
   openModal('Novo Produto', body, footer);
@@ -180,7 +180,7 @@ function abrirModalServico(container) {
 
   const footer = `
     <button class="btn btn-secondary" id="sv-cancel">Cancelar</button>
-    <button class="btn btn-primary" id="sv-save">Salvar Serviço</button>
+    <button class="btn btn-primary" id="sv-save">Salvar serviço</button>
   `;
 
   openModal('Novo Serviço', body, footer);

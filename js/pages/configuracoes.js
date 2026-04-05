@@ -9,7 +9,7 @@ export function renderConfiguracoes(container) {
 
   container.innerHTML = `
     <div class="section-title">Configurações</div>
-    <div class="section-sub">Dados do salão, parâmetros de precificação e listas personalizáveis.</div>
+    <div class="section-sub">Dados do salão, precificação e preferências do sistema.</div>
 
     <!-- Dados do salão -->
     <div class="card mb-16">
@@ -184,7 +184,7 @@ function salvarConfig() {
   Config.save(cfg);
   const el = document.getElementById('topBarNomeSalao');
   if (el) el.textContent = cfg.nomeSalao;
-  toast('Configurações salvas! ✓', 'success');
+  toast('Configurações salvas!', 'success');
 }
 
 // ── Toggle de tema (Aparência) ─────────────────────────

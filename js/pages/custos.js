@@ -12,7 +12,7 @@ export function renderCustos(container) {
     <div class="section-header">
       <div>
         <div class="section-title">Custos Fixos Mensais</div>
-        <div class="section-sub">Preencha mês a mês. A média anual atualiza automaticamente.</div>
+        <div class="section-sub">Registre despesas mensais e acompanhe sua média anual.</div>
       </div>
       <select id="custosMesSel" class="badge-outline" style="font-size:14px;padding:6px 12px">
         ${MESES.map((m, i) => `<option value="${i}" ${i === mesAtual ? 'selected' : ''}>${m} ${ano}</option>`).join('')}
@@ -156,6 +156,6 @@ function salvarCustos(key, campos, mesIdx, ano) {
   });
 
   Custos.saveMes(key, data);
-  toast(`Custos de ${MESES[mesIdx]} salvos! ✓`, 'success');
+  toast(`Custos de ${MESES[mesIdx]} salvos!`, 'success');
   renderForm(ano, mesIdx);
 }

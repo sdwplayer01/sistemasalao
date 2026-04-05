@@ -16,7 +16,7 @@ export function renderDiario(container) {
     <div class="section-header">
       <div>
         <div class="section-title">Diário / Frente de Caixa</div>
-        <div class="section-sub">Gestão de atendimentos e fluxo de caixa diário.</div>
+        <div class="section-sub">Registre atendimentos e acompanhe o caixa do dia.</div>
       </div>
       <button class="btn btn-primary" id="btn-novo-lancamento">
         <i data-lucide="plus"></i> Novo Lançamento
@@ -58,7 +58,7 @@ export function renderDiario(container) {
 
 function renderTabHoje(container, lista) {
   if (lista.length === 0) {
-    container.innerHTML = emptyState('Nenhum lançamento hoje.', 'Ainda não há lançamentos registrados para este dia.');
+    container.innerHTML = emptyState('Nenhum lançamento hoje.', 'Use o botão acima para registrar o primeiro atendimento do dia.');
     return;
   }
 
@@ -148,7 +148,7 @@ function abrirModalLancamento() {
 
   const footer = `
     <button class="btn btn-secondary" onclick="window.__utils.closeModal()">Cancelar</button>
-    <button class="btn btn-primary" id="btn-save-lan">Salvar Lançamento</button>
+    <button class="btn btn-primary" id="btn-save-lan">Salvar lançamento</button>
   `;
 
   openModal('Novo Atendimento', body, footer);
@@ -167,7 +167,7 @@ function abrirModalLancamento() {
     const cliente = document.getElementById('f-cliente').value.trim();
     const valor = parseFloat(document.getElementById('f-valor').dataset.rawValue) || 0;
 
-    if (!cliente || valor <= 0) return toast('Preencha os campos obrigatórios.', 'error');
+    if (!cliente || valor <= 0) return toast('Preencha todos os campos obrigatórios.', 'error');
 
     Diario.add({
       id: Date.now().toString(),
@@ -187,9 +187,9 @@ function abrirModalLancamento() {
 
 // Função local — não depende de window.__utils
 function excluirLancamento(id) {
-  if (confirm('Excluir este registro?')) {
+  if (confirm('Remover este lançamento?')) {
     Diario.remove(id);
     window.__navigateTo('diario');
-    toast('Removido.');
+    toast('Registro removido!');
   }
 }

@@ -11,7 +11,7 @@ export function renderReceitas(container) {
 
   container.innerHTML = `
     <div class="section-title">Receitas do Espaço</div>
-    <div class="section-sub">Valores recebidos de terceiros que usam seu espaço — reduzem seu custo fixo mensal para precificação.</div>
+    <div class="section-sub">Repasses e aluguéis que reduzem seu custo fixo real.</div>
 
     <div class="action-bar">
       <label style="font-weight:500;color:var(--txt-muted);font-size:13px">Mês:</label>
@@ -132,7 +132,7 @@ function renderForm(ano, mesIdx) {
     const saved = {};
     campos.forEach(([k]) => { saved[k] = parseFloat(document.getElementById(`ri-${k}`)?.value) || 0; });
     Receitas.saveMes(key, saved);
-    toast(`Receitas de ${MESES[mesIdx]} salvas! ✓`, 'success');
+    toast(`Receitas de ${MESES[mesIdx]} salvas!`, 'success');
     renderForm(ano, mesIdx);
   };
 }

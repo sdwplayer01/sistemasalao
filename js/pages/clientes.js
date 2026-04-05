@@ -41,7 +41,7 @@ export function renderClientes(container) {
   todos.forEach(c => cnt[calcSegmento(Clientes.calcStats(c.nome))]++);
 
   container.innerHTML = `
-    ${sectionHeader('CRM de Clientes', 'Segmentação automática baseada no comportamento de visita.')}
+    ${sectionHeader('Clientes', 'Acompanhe e segmente sua carteira de clientes.')}
 
     <div class="crm-segmentos mt-16">
       <button class="crm-seg-btn ${_filtroSeg === '' ? 'active' : ''}" data-seg="">Todos <span class="crm-seg-count">${todos.length}</span></button>
@@ -57,7 +57,7 @@ export function renderClientes(container) {
         <i data-lucide="search" style="width:16px; position:absolute; left:12px; top:50%; transform:translateY(-50%); color:var(--txt-muted)"></i>
         <input type="text" id="crmBusca" placeholder="Buscar por nome..." value="${_filtroNome}" style="padding-left:36px" />
       </div>
-      <button class="btn btn-primary" id="btnNovoCliente"><i data-lucide="plus"></i> Cadastrar Cliente</button>
+      <button class="btn btn-primary" id="btnNovoCliente"><i data-lucide="plus"></i> Cadastrar cliente</button>
     </div>
 
     <div id="crmTabela" class="mt-16"></div>
@@ -89,7 +89,7 @@ function renderTabela(container) {
   if (_filtroSeg) clientes = clientes.filter(c => c.segmento === _filtroSeg);
 
   if (!clientes.length) {
-    el.innerHTML = emptyState('Nenhum cliente encontrado com estes filtros.');
+    el.innerHTML = emptyState('Nenhuma cliente encontrada.', 'Tente outro filtro ou cadastre uma nova cliente.');
     return;
   }
 
@@ -169,20 +169,20 @@ function abrirPerfilModal(nome, onSave) {
 
   openModal(`Perfil: ${nome}`, body, `
     <button class="btn btn-secondary" id="btnFecharPerfil">Fechar</button>
-    <button class="btn btn-primary" id="btnSalvarObs">Salvar Ficha</button>
+    <button class="btn btn-primary" id="btnSalvarObs">Salvar ficha</button>
   `);
 
   document.getElementById('btnFecharPerfil').onclick = closeModal;
   document.getElementById('btnSalvarObs').onclick = () => {
     Clientes.upsert(nome, { obs: document.getElementById('cp-obs').value.trim() });
-    toast('Ficha técnica atualizada!');
+    toast('Ficha atualizada!');
     if (onSave) onSave();
   };
 }
 
 function abrirModalNovoCliente(container) {
   const body = `
-    <div class="form-group"><label>Nome Completo *</label><input type="text" id="nc-nome" autocomplete="off"></div>
+    <div class="form-group"><label>Nome completo</label><input type="text" id="nc-nome" autocomplete="off"></div>
     <div class="form-group"><label>WhatsApp</label><input type="text" id="nc-tel" data-phone placeholder="(00) 00000-0000"></div>
     <div class="form-group"><label>Observações Iniciais</label><textarea id="nc-obs" rows="2"></textarea></div>
   `;
@@ -192,7 +192,7 @@ function abrirModalNovoCliente(container) {
 
   document.getElementById('btnSalvarNc').onclick = () => {
     const nome = document.getElementById('nc-nome').value.trim();
-    if (!nome) return toast('O nome é obrigatório.', 'error');
+    if (!nome) return toast('Informe o nome da cliente.', 'error');
 
     Clientes.upsert(nome, {
       telefone: limparTelefone(document.getElementById('nc-tel').value),
@@ -201,7 +201,7 @@ function abrirModalNovoCliente(container) {
 
     closeModal();
     renderClientes(container);
-    toast('Cliente cadastrado com sucesso!');
+    toast('Cliente cadastrada!');
   };
 }
 

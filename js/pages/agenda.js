@@ -28,7 +28,7 @@ export function renderAgenda(container) {
 
   container.innerHTML = `
     <div class="section-title">Agenda de Horários</div>
-    <div class="section-sub">Agende clientes e envie mensagens WhatsApp com um clique.</div>
+    <div class="section-sub">Gerencie horários e confirme agendamentos pelo WhatsApp.</div>
 
     <div id="agendaAmanha"></div>
 
@@ -125,7 +125,7 @@ function renderTabela(svcs, profs, cfg) {
   }
 
   if (!entries.length) {
-    container.innerHTML = emptyState('Nenhum agendamento encontrado. Clique em "+ Novo Agendamento".');
+    container.innerHTML = emptyState('Nenhum agendamento encontrado.', 'Adicione o primeiro horário do dia.');
     return;
   }
 
@@ -170,7 +170,7 @@ function renderTabela(svcs, profs, cfg) {
         Agenda.remove(parseInt(btn.dataset.del));
         renderAmanha(cfg);
         renderTabela(svcs, profs, cfg);
-        toast('Agendamento removido.', 'default');
+        toast('Agendamento removido!');
       }
     };
   });
@@ -181,7 +181,7 @@ function renderTabela(svcs, profs, cfg) {
       Agenda.update(parseInt(sel.dataset.statusId), { status: sel.value });
       renderAmanha(cfg);
       renderTabela(svcs, profs, cfg);
-      toast('Status atualizado! ✓', 'success');
+      toast('Status atualizado!', 'success');
     };
   });
 }
@@ -373,7 +373,7 @@ function abrirForm(entry, svcs, profs, cfg, onSave) {
     const status = document.getElementById('ag-status').value;
     const obs = document.getElementById('ag-obs').value.trim();
 
-    if (!data) return toast('Informe a data.', 'error');
+    if (!data) return toast('Selecione a data do agendamento.', 'error');
     if (!horario) return toast('Selecione o horário.', 'error');
     if (!cliente) return toast('Informe o nome da cliente.', 'error');
 
@@ -383,7 +383,7 @@ function abrirForm(entry, svcs, profs, cfg, onSave) {
     else Agenda.add(novo);
 
     closeModal();
-    toast(isEdit ? 'Agendamento atualizado! ✓' : 'Cliente agendada! ✓', 'success');
+    toast(isEdit ? 'Agendamento salvo!' : 'Cliente agendada!', 'success');
     onSave();
   };
 }

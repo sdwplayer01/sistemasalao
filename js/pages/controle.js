@@ -72,7 +72,7 @@ export function renderControle(container) {
 
   container.innerHTML = `
     <div class="section-title">Controle Anual ${ano}</div>
-    <div class="section-sub">Visão consolidada mês a mês — Diário, Custos e Receitas.</div>
+    <div class="section-sub">Consolidado anual de faturamento, custos e lucro.</div>
 
     <div class="table-wrap controle-table">
       <table>
