@@ -160,7 +160,7 @@ body {
 /* ── SIDEBAR ──────────────────────────────────── */
 .sidebar {
   width: var(--sidebar-w);
-  top: 54px;
+  top: 0;
   bottom: 0;
   padding-top: 10px;
   background: var(--sidebar-bg);
@@ -169,7 +169,7 @@ body {
   flex-direction: column;
   position: fixed;
   left: 0;
-  z-index: 100;
+  z-index: 120;
   transition: width .25s ease, transform .25s ease;
   overflow-x: hidden;
   box-shadow: 2px 0 12px rgba(44, 22, 84, .06);
@@ -221,6 +221,10 @@ body {
 
 /* Item 1: collapsed só no desktop — no mobile o margin já é 0 via !important */
 @media (min-width: 769px) {
+  .sidebar.collapsed~.top-bar {
+    left: var(--sidebar-w-collapsed);
+  }
+
   .sidebar.collapsed~.main-content {
     margin-left: var(--sidebar-w-collapsed);
   }
@@ -366,6 +370,7 @@ body {
 .main-content {
   flex: 1;
   margin-left: var(--sidebar-w);
+  padding-top: var(--topbar-h);
   display: flex;
   flex-direction: column;
   min-height: 100vh;
@@ -380,10 +385,13 @@ body {
   align-items: center;
   padding: 0 24px;
   gap: 16px;
-  position: sticky;
+  position: fixed;
   top: 0;
+  left: var(--sidebar-w);
+  right: 0;
   z-index: 110;
   box-shadow: var(--shadow-sm);
+  transition: left .25s ease;
 }
 
 .btn-menu-mobile {
@@ -1435,6 +1443,10 @@ textarea {
 
   .main-content {
     margin-left: 0 !important;
+  }
+
+  .top-bar {
+    left: 0 !important;
   }
 
   .btn-menu-mobile {

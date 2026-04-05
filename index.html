@@ -86,20 +86,22 @@
       </div>
     </aside>
 
+    <!-- TOP BAR (fora do main — independente do scroll de conteúdo) -->
+    <nav class="top-bar">
+      <button class="btn-menu-mobile" id="btnMenuMobile"
+        style="background:none;border:none;color:var(--plum-light);font-size:24px;cursor:pointer;display:none;padding:0"><i
+          data-lucide="menu"></i></button>
+      <div id="topBarTitle">
+        <span id="topBarNomeSalao" class="brand-name">Nome do Salão Padrão</span>
+        <span class="brand-tagline">GESTÃO INTELIGENTE</span>
+      </div>
+      <div class="top-bar-right">
+        <span class="badge-mes" id="badgeMes"></span>
+      </div>
+    </nav>
+
     <!-- MAIN -->
     <main class="main-content">
-      <div class="top-bar">
-        <button class="btn-menu-mobile" id="btnMenuMobile"
-          style="background:none;border:none;color:var(--plum-light);font-size:24px;cursor:pointer;display:none;padding:0"><i
-            data-lucide="menu"></i></button>
-        <div id="topBarTitle">
-          <span id="topBarNomeSalao" class="brand-name">Nome do Salão Padrão</span>
-          <span class="brand-tagline">GESTÃO INTELIGENTE</span>
-        </div>
-        <div class="top-bar-right">
-          <span class="badge-mes" id="badgeMes"></span>
-        </div>
-      </div>
 
       <div id="page-dashboard" class="page active">
         <div class="rotating-msg-bar" id="rotatingMsgBar">
