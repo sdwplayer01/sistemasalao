@@ -467,20 +467,8 @@ body {
   margin-bottom: 20px;
 }
 
-.kpi-card {
-  background: var(--bg-card);
-  border-radius: var(--radius);
-  border: 1px solid var(--border);
-  padding: 16px 18px;
-  box-shadow: var(--shadow-sm);
-  transition: box-shadow .2s, transform .15s;
-}
-
-.kpi-card:hover {
-  box-shadow: var(--shadow-md);
-  transform: translateY(-1px);
-}
-
+/* Base KPI card (used by non-dashboard pages) */
+/* Dashboard KPI overrides are in DASHBOARD v3.1 section */
 .kpi-label {
   font-weight: 600;
   color: rgb(70, 60, 80);
@@ -496,26 +484,6 @@ body {
   font-weight: 600;
   color: var(--noir);
   line-height: 1.15;
-}
-
-.kpi-card.green {
-  border-left: 3px solid #4CAF50;
-}
-
-.kpi-card.plum {
-  border-left: 3px solid var(--plum);
-}
-
-.kpi-card.rose {
-  border-left: 3px solid var(--rose);
-}
-
-.kpi-card.blue {
-  border-left: 3px solid #1A4FA0;
-}
-
-.kpi-card.warn {
-  border-left: 3px solid #F57C00;
 }
 
 .kpi-sub {
@@ -1029,7 +997,7 @@ textarea {
 
 .chart-bar {
   width: 100%;
-  border-radius: 4px 4px 0 0;
+  border-radius: 5px 5px 0 0;
   background: linear-gradient(to top, var(--plum), var(--plum-mid));
   transition: height .4s ease;
   min-height: 2px;
@@ -1088,17 +1056,17 @@ textarea {
 
 /* ── MENSAGENS ROTATIVAS (Dashboard) ─────────── */
 .rotating-msg-bar {
-  background: linear-gradient(90deg, #5B2D8E, #7B4F8E);
+  background: linear-gradient(135deg, #5B2D8E 0%, #7B4F8E 60%, #9B6ABF 100%);
   border: none;
-  border-radius: var(--radius-sm);
-  padding: 10px 16px;
-  margin-bottom: 18px;
-  min-height: 42px;
+  border-radius: var(--radius);
+  padding: 11px 20px;
+  min-height: 44px;
   display: flex;
   align-items: center;
   justify-content: center;
   position: relative;
   overflow: hidden;
+  box-shadow: 0 2px 8px rgba(91, 45, 142, .15);
 }
 
 .rotating-msg-text {
@@ -1108,6 +1076,7 @@ textarea {
 
   background: linear-gradient(90deg, #F5DFAF, #EAD7A1);
   -webkit-background-clip: text;
+  background-clip: text;
   -webkit-text-fill-color: transparent;
 
   opacity: 0;
@@ -2634,6 +2603,326 @@ textarea {
   justify-content: center;
   align-items: center;
   min-height: 40px;
-  margin-top: 0 !important; /* Limpa a margem que tinha antes na main-content */
-  margin-bottom: 24px;
+  margin-top: 0 !important;
+  margin-bottom: 20px;
 }
+
+/* ══════════════════════════════════════════════════════
+   DASHBOARD v3.1 — Visual Refinement
+   KPIs, Agenda widget, CRM widget, Chart, Alert, Legend
+══════════════════════════════════════════════════════ */
+
+/* ── Dashboard KPI Grid ──────────────────────────── */
+.grid-kpi {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
+
+.kpi-card {
+  position: relative;
+  background: var(--bg-card);
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  padding: 20px 22px;
+  box-shadow: var(--shadow-sm);
+  transition: box-shadow .25s, transform .2s;
+  overflow: hidden;
+}
+
+.kpi-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 4px;
+  height: 100%;
+  border-radius: var(--radius) 0 0 var(--radius);
+}
+
+.kpi-card:hover {
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
+}
+
+.kpi-card.green::before  { background: linear-gradient(to bottom, #4CAF50, #81C784); }
+.kpi-card.plum::before   { background: linear-gradient(to bottom, var(--plum), var(--plum-mid)); }
+.kpi-card.rose::before   { background: linear-gradient(to bottom, var(--rose), #D4A0B0); }
+.kpi-card.blue::before   { background: linear-gradient(to bottom, #1A4FA0, #5C8FD6); }
+.kpi-card.warn::before   { background: linear-gradient(to bottom, #F57C00, #FFB74D); }
+
+.kpi-card-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--txt-muted);
+  text-transform: uppercase;
+  letter-spacing: .5px;
+  margin-bottom: 8px;
+}
+
+.kpi-card-value {
+  font-family: var(--font-serif);
+  font-size: 26px;
+  font-weight: 600;
+  color: var(--noir);
+  line-height: 1.1;
+  letter-spacing: -.02em;
+}
+
+.kpi-card-sub {
+  font-size: 11px;
+  color: var(--txt-muted);
+  margin-top: 6px;
+  font-weight: 400;
+}
+
+/* ── Dashboard Main Grid (2 columns) ─────────────── */
+.grid-dashboard {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  align-items: start;
+}
+
+/* ── Alert Banner (Low Stock) ────────────────────── */
+.alert-estoque {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 18px;
+  border-radius: var(--radius);
+  background: #FEF3C7;
+  border: 1px solid #FDE68A;
+  color: #92400E;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+[data-theme="dark"] .alert-estoque {
+  background: rgba(253, 230, 138, .08);
+  border-color: rgba(253, 230, 138, .2);
+  color: #FDE68A;
+}
+
+.alert-link {
+  margin-left: auto;
+  white-space: nowrap;
+  font-weight: 600;
+  font-size: 12px;
+  color: #92400E;
+  text-decoration: none;
+  flex-shrink: 0;
+  transition: opacity .15s;
+}
+
+.alert-link:hover {
+  opacity: .7;
+}
+
+[data-theme="dark"] .alert-link {
+  color: #FDE68A;
+}
+
+/* ── CRM Legend Dots ─────────────────────────────── */
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--txt-dark);
+  line-height: 1;
+}
+
+.legend-item strong {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.dot-green { background: var(--txt-green); }
+.dot-plum  { background: var(--plum); }
+.dot-red   { background: var(--txt-red); }
+.dot-warn  { background: #F59E0B; }
+.dot-gray  { background: var(--border-dark); }
+
+/* ── CRM Pizza ───────────────────────────────────── */
+.crm-pizza-empty {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  background: var(--bg-soft);
+  border: 2px dashed var(--border);
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  color: var(--txt-muted);
+  text-align: center;
+}
+
+.crm-pizza {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  box-shadow: inset 0 0 0 1px rgba(0,0,0,.05);
+}
+
+/* ── Chart Legend ────────────────────────────────── */
+.chart-legend {
+  display: flex;
+  gap: 16px;
+  margin-top: 10px;
+  font-size: 11px;
+  color: var(--txt-muted);
+}
+
+.chart-legend-dot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  margin-right: 5px;
+  vertical-align: middle;
+}
+
+/* ── Dashboard Agenda Row ────────────────────────── */
+.dash-agenda-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 18px;
+  border-bottom: 1px solid var(--border);
+  transition: background .12s;
+}
+
+.dash-agenda-row:last-child {
+  border-bottom: none;
+}
+
+.dash-agenda-row:hover {
+  background: var(--ghost);
+}
+
+.dash-agenda-cliente {
+  flex: 1;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--txt-dark);
+}
+
+.dash-agenda-servico {
+  font-size: 11px;
+  color: var(--txt-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 120px;
+}
+
+/* ── Card Body Variants ──────────────────────────── */
+.card-body-flex {
+  padding: 20px;
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
+.card-body-flush {
+  padding: 0;
+}
+
+/* ── Card Footer Flex ────────────────────────────── */
+.card-footer-flex {
+  padding: 10px 18px;
+  border-top: 1px solid var(--border);
+  background: var(--ghost);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* ── Sub-Header (Amanhã section) ─────────────────── */
+.card-sub-header {
+  padding: 10px 18px;
+  border-top: 1px solid var(--border);
+}
+
+.card-sub-header .card-title {
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--txt-muted);
+}
+
+/* ── Navigation Link ────────────────────────────── */
+.link-nav {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--plum);
+  text-decoration: none;
+  transition: opacity .15s;
+}
+
+.link-nav:hover {
+  opacity: .7;
+}
+
+/* ── Dashboard Empty State (inline, inside cards) ─── */
+.dash-empty {
+  padding: 20px 18px;
+  font-size: 13px;
+  color: var(--txt-muted);
+}
+
+/* ── Dashboard KPI Responsive ────────────────────── */
+@media (max-width: 1200px) {
+  .grid-kpi {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .grid-kpi {
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+
+  .grid-dashboard {
+    grid-template-columns: 1fr;
+  }
+
+  .kpi-card {
+    padding: 16px 18px;
+  }
+
+  .kpi-card-value {
+    font-size: 22px;
+  }
+
+  .card-body-flex {
+    gap: 16px;
+  }
+
+  .chart-legend {
+    gap: 10px;
+  }
+}
+
+@media (max-width: 480px) {
+  .grid-kpi {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* fw-500 utility */
+.fw-500 { font-weight: 500; }
+

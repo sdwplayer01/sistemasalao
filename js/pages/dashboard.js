@@ -72,7 +72,7 @@ export function renderDashboard(container) {
     </div>
 
     <!-- KPIs do mês -->
-    <div class="grid-kpi mt-16">
+    <div class="grid-kpi">
 
       <div class="kpi-card green">
         <div class="kpi-card-label">Faturamento — ${MESES[mesAtual]}</div>
@@ -118,49 +118,49 @@ export function renderDashboard(container) {
       <div class="card">
         <div class="card-header">
           <span class="card-title">📅 Agenda de Hoje</span>
-          <span class="badge badge-plum" style="font-size:11px">${fmtData(hoje())}</span>
+          <span class="badge badge-plum">${fmtData(hoje())}</span>
         </div>
-        <div class="card-body" style="padding:0">
+        <div class="card-body card-body-flush">
           ${agHoje.length === 0
-      ? `<p class="text-muted" style="padding:16px;font-size:13px">Nenhum agendamento para hoje.</p>`
+      ? `<p class="dash-empty">Nenhum agendamento para hoje.</p>`
       : agHoje.map(a => _agendaRow(a)).join('')
     }
         </div>
         ${agAmanha.length > 0 ? `
-        <div class="card-header" style="border-top:1px solid var(--bg-soft)">
-          <span class="card-title" style="font-size:12px;color:var(--txt-muted)">
+        <div class="card-sub-header">
+          <span class="card-title">
             💜 Amanhã — ${agAmanha.length} cliente${agAmanha.length !== 1 ? 's' : ''}
           </span>
         </div>
-        <div class="card-body" style="padding:0">
+        <div class="card-body card-body-flush">
           ${agAmanha.map(a => _agendaRow(a)).join('')}
         </div>` : ''}
         <div class="card-footer">
-          <a href="#" id="linkVerAgenda" class="text-plum fw-500" style="font-size:13px">Ver agenda completa →</a>
+          <a href="#" id="linkVerAgenda" class="link-nav">Ver agenda completa →</a>
         </div>
       </div>
 
       <!-- Saúde da carteira -->
       <div class="card">
         <div class="card-header"><span class="card-title">✦ Saúde da Carteira</span></div>
-        <div class="card-body" style="display:flex;align-items:center;gap:20px;flex-wrap:wrap">
+        <div class="card-body card-body-flex">
           ${totalClientes > 0
-      ? `<div style="${pizzaStyle} width:100px;height:100px;border-radius:50%;flex-shrink:0"></div>`
-      : `<div style="width:100px;height:100px;border-radius:50%;background:var(--bg-soft);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--txt-muted);text-align:center">Sem<br>dados</div>`
+      ? `<div class="crm-pizza" style="${pizzaStyle}"></div>`
+      : `<div class="crm-pizza-empty">Sem<br>dados</div>`
     }
-          <div style="flex:1;min-width:120px;display:flex;flex-direction:column;gap:6px">
+          <div style="flex:1;min-width:120px;display:flex;flex-direction:column;gap:8px">
             <div class="legend-item"><span class="dot dot-green"></span> Fiéis: <strong>${crm.fiel}</strong></div>
             <div class="legend-item"><span class="dot dot-plum"></span> Novas: <strong>${crm.nova}</strong></div>
-            <div class="legend-item"><span class="dot" style="background:var(--bg-soft);border:1px solid var(--border)"></span> Regulares: <strong>${crm.regular}</strong></div>
+            <div class="legend-item"><span class="dot dot-gray"></span> Regulares: <strong>${crm.regular}</strong></div>
             <div class="legend-item"><span class="dot dot-warn"></span> Ausentes: <strong>${crm.ausente}</strong></div>
             <div class="legend-item"><span class="dot dot-red"></span> Inativas: <strong>${crm.inativa}</strong></div>
           </div>
         </div>
-        <div class="card-footer" style="display:flex;justify-content:space-between;align-items:center">
+        <div class="card-footer-flex">
           <span class="text-muted" style="font-size:12px">
             Retenção 30 dias: <strong class="text-green">${crm.taxa}%</strong>
           </span>
-          <a href="#" id="linkVerCRM" class="text-plum fw-500" style="font-size:13px">Ver CRM →</a>
+          <a href="#" id="linkVerCRM" class="link-nav">Ver CRM →</a>
         </div>
       </div>
 
@@ -172,9 +172,9 @@ export function renderDashboard(container) {
       <div class="card-header"><span class="card-title">📊 Faturamento — Últimos 6 Meses</span></div>
       <div class="card-body">
         <div class="chart-placeholder" id="chartSemestral"></div>
-        <div style="display:flex;gap:16px;margin-top:8px;font-size:11px;color:var(--txt-muted)">
-          <span><span style="display:inline-block;width:10px;height:10px;background:var(--plum);border-radius:2px;margin-right:4px"></span>Faturamento</span>
-          <span><span style="display:inline-block;width:10px;height:10px;background:var(--txt-green);border-radius:2px;opacity:.7;margin-right:4px"></span>Lucro real</span>
+        <div class="chart-legend">
+          <span><span class="chart-legend-dot" style="background:var(--plum)"></span>Faturamento</span>
+          <span><span class="chart-legend-dot" style="background:var(--txt-green);opacity:.7"></span>Lucro real</span>
         </div>
       </div>
     </div>` : ''}
@@ -241,10 +241,10 @@ function _agendaRow(a) {
   }[a.status] || 'badge-plum';
 
   return `
-    <div style="display:flex;align-items:center;gap:8px;padding:10px 16px;border-bottom:1px solid var(--bg-soft)">
-      <span class="badge badge-plum" style="font-size:11px;flex-shrink:0">${a.horario || '—'}</span>
-      <span style="flex:1;font-size:13px;font-weight:500">${a.cliente || '—'}</span>
-      ${a.servicoNome ? `<span class="text-muted" style="font-size:11px">${a.servicoNome}</span>` : ''}
+    <div class="dash-agenda-row">
+      <span class="badge badge-plum">${a.horario || '—'}</span>
+      <span class="dash-agenda-cliente">${a.cliente || '—'}</span>
+      ${a.servicoNome ? `<span class="dash-agenda-servico">${a.servicoNome}</span>` : ''}
       <span class="badge ${statusBadge}" style="font-size:10px">${a.status || 'agendado'}</span>
     </div>
   `;
