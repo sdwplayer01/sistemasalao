@@ -81,10 +81,11 @@ export function navigateTo(page) {
     _paginaAtual = page
     localStorage.setItem('salao_last_page', page)
 
-    if (window.innerWidth <= 768) {
-      const sb = document.getElementById('sidebar');
-      if (sb) sb.classList.remove('open');
-    }
+    // Sempre fecha a sidebar ao navegar (pois agora é overlay)
+    const sb = document.getElementById('sidebar');
+    const bg = document.getElementById('sidebarBackdrop');
+    if (sb) sb.classList.remove('open');
+    if (bg) bg.classList.remove('active');
   }
 
   if (document.startViewTransition) {
@@ -126,28 +127,20 @@ function initApp(user) {
     btn.onclick = () => navigateTo(btn.dataset.page)
   })
 
-  // Sidebar e Menu
+  // Sidebar, Menu e Backdrop (Overlay Unificado)
   const sidebar = document.getElementById('sidebar')
-  if (window.innerWidth > 768 && localStorage.getItem('sidebarCollapsed') === 'true') {
-    sidebar.classList.add('collapsed')
-  }
-
+  const backdrop = document.getElementById('sidebarBackdrop')
   const btnMenu = document.getElementById('btnMenu')
-  if (btnMenu) {
-    btnMenu.onclick = () => {
-      if (window.innerWidth > 768) {
-        sidebar.classList.toggle('collapsed')
-        localStorage.setItem('sidebarCollapsed', sidebar.classList.contains('collapsed'))
-      } else {
-        sidebar.classList.toggle('open')
-      }
-    }
+  const btnMenuMobile = document.getElementById('btnMenuMobile')
+
+  const toggleSidebar = () => {
+    if (sidebar) sidebar.classList.toggle('open')
+    if (backdrop) backdrop.classList.toggle('active')
   }
 
-  const btnMenuMobile = document.getElementById('btnMenuMobile')
-  if (btnMenuMobile) {
-    btnMenuMobile.onclick = () => sidebar.classList.toggle('open')
-  }
+  if (btnMenu) btnMenu.onclick = toggleSidebar
+  if (btnMenuMobile) btnMenuMobile.onclick = toggleSidebar
+  if (backdrop) backdrop.onclick = toggleSidebar
 
   // Modal
   document.getElementById('modalClose').onclick = closeModal

@@ -157,77 +157,51 @@ body {
   background-color: transparent;
 }
 
-/* ── SIDEBAR ──────────────────────────────────── */
+/* ── SIDEBAR (overlay) ────────────────────────── */
 .sidebar {
   width: var(--sidebar-w);
-  top: 0;
+  top: var(--topbar-h);
   bottom: 0;
   padding-top: 10px;
-  background: var(--sidebar-bg);
+  background: rgba(255, 255, 255, .95);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   border-right: 1px solid var(--sidebar-border);
   display: flex;
   flex-direction: column;
   position: fixed;
   left: 0;
-  z-index: 120;
-  transition: width .25s ease, transform .25s ease;
+  z-index: 999;
+  transform: translateX(-100%);
+  transition: transform .28s cubic-bezier(.4, 0, .2, 1);
   overflow-x: hidden;
-  box-shadow: 2px 0 12px rgba(44, 22, 84, .06);
+  box-shadow: none;
 }
 
-/* Colapsado (desktop) */
-.sidebar.collapsed {
-  width: var(--sidebar-w-collapsed);
+[data-theme="dark"] .sidebar {
+  background: rgba(23, 14, 40, .95);
 }
 
-.sidebar.collapsed .brand-text,
-.sidebar.collapsed .brand-name,
-.sidebar.collapsed .brand-sub {
-  display: none !important;
+.sidebar.open {
+  transform: translateX(0);
+  box-shadow: 6px 0 24px rgba(44, 22, 84, .12);
 }
 
-.sidebar.collapsed .menu-text {
-  display: none !important;
+/* Backdrop que escurece o conteúdo quando o menu está aberto */
+.sidebar-backdrop {
+  position: fixed;
+  inset: 0;
+  top: var(--topbar-h);
+  background: rgba(0, 0, 0, .25);
+  z-index: 998;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .28s ease;
 }
 
-.sidebar.collapsed .nav-item {
-  justify-content: center;
-  padding: 10px 8px;
-  gap: 0;
-}
-
-.sidebar.collapsed .nav-icon {
-  margin: 0 auto;
-}
-
-.sidebar.collapsed .nav-icon svg {
-  width: 22px;
-  height: 22px;
-}
-
-.sidebar.collapsed .sidebar-footer span,
-.sidebar.collapsed .btn-export,
-.sidebar.collapsed .btn-import,
-.sidebar.collapsed #userEmail,
-.sidebar.collapsed #btnLogout,
-.sidebar.collapsed #fileImport {
-  display: none !important;
-}
-
-.sidebar.collapsed .sidebar-footer {
-  padding: 8px;
-  border-top: none;
-}
-
-/* Item 1: collapsed só no desktop — no mobile o margin já é 0 via !important */
-@media (min-width: 769px) {
-  .sidebar.collapsed~.top-bar {
-    left: var(--sidebar-w-collapsed);
-  }
-
-  .sidebar.collapsed~.main-content {
-    margin-left: var(--sidebar-w-collapsed);
-  }
+.sidebar-backdrop.active {
+  opacity: 1;
+  pointer-events: auto;
 }
 
 .sidebar-brand {
@@ -364,12 +338,10 @@ body {
 /* ── MAIN CONTENT ─────────────────────────────── */
 .main-content {
   flex: 1;
-  margin-left: var(--sidebar-w);
   padding-top: var(--topbar-h);
   display: flex;
   flex-direction: column;
   min-height: 100vh;
-  transition: margin-left .25s ease;
 }
 
 .top-bar {
@@ -382,11 +354,10 @@ body {
   gap: 0;
   position: fixed;
   top: 0;
-  left: var(--sidebar-w);
-  right: 0;
-  z-index: 110;
+  left: 0;
+  width: 100%;
+  z-index: 1000;
   box-shadow: var(--shadow-sm);
-  transition: left .25s ease;
 }
 
 #btnMenuMobile {

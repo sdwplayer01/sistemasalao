@@ -28,11 +28,6 @@
 
     <!-- SIDEBAR -->
     <aside class="sidebar" id="sidebar">
-      <div class="sidebar-brand">
-        <button class="btn-menu" id="btnMenu"
-          style="background:none;border:none;color:var(--txt-white);font-size:24px;cursor:pointer;display:flex;align-items:center;justify-content:center"><i
-            data-lucide="menu"></i></button>
-      </div>
 
       <nav class="sidebar-nav">
         <button class="nav-item" data-page="dashboard">
@@ -86,10 +81,13 @@
       </div>
     </aside>
 
+    <!-- BACKDROP DA SIDEBAR OVERLAY -->
+    <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+
     <!-- TOP BAR (fora do main — independente do scroll de conteúdo) -->
     <nav class="top-bar">
       <button class="btn-menu-mobile" id="btnMenuMobile"
-        style="background:none;border:none;color:var(--plum-light);font-size:24px;cursor:pointer;display:none;padding:0"><i
+        style="background:none;border:none;color:var(--plum-light);font-size:24px;cursor:pointer;padding:0"><i
           data-lucide="menu"></i></button>
       <div id="topBarTitle">
         <span id="topBarNomeSalao" class="brand-name">Nome do Salão Padrão</span>
