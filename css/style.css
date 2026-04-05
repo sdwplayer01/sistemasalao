@@ -157,9 +157,9 @@ body {
   background-color: transparent;
 }
 
-/* ── SIDEBAR (overlay) ────────────────────────── */
+/* ── SIDEBAR (Mini-Retrátil / Overlay) ────────────────────────── */
 .sidebar {
-  width: var(--sidebar-w);
+  width: 60px;
   top: var(--topbar-h);
   bottom: 0;
   padding-top: 10px;
@@ -172,8 +172,7 @@ body {
   position: fixed;
   left: 0;
   z-index: 999;
-  transform: translateX(-100%);
-  transition: transform .28s cubic-bezier(.4, 0, .2, 1);
+  transition: width 0.3s ease, transform 0.3s ease;
   overflow-x: hidden;
   box-shadow: none;
 }
@@ -182,8 +181,9 @@ body {
   background: rgba(23, 14, 40, .95);
 }
 
-.sidebar.open {
-  transform: translateX(0);
+.sidebar:hover,
+.sidebar.expanded {
+  width: var(--sidebar-w);
   box-shadow: 6px 0 24px rgba(44, 22, 84, .12);
 }
 
@@ -241,6 +241,9 @@ body {
   color: rgb(79, 73, 91);
   display: block;
   line-height: 1.2;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  white-space: nowrap;
 }
 
 .brand-tagline {
@@ -250,6 +253,16 @@ body {
   text-transform: uppercase;
   display: block;
   line-height: 1.2;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  white-space: nowrap;
+}
+
+.sidebar:hover .brand-name,
+.sidebar.expanded .brand-name,
+.sidebar:hover .brand-tagline,
+.sidebar.expanded .brand-tagline {
+  opacity: 1;
 }
 
 .sidebar-nav {
@@ -300,6 +313,19 @@ body {
   flex-shrink: 0;
 }
 
+.menu-text {
+  opacity: 0;
+  white-space: nowrap;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+
+.sidebar:hover .menu-text,
+.sidebar.expanded .menu-text {
+  opacity: 1;
+  pointer-events: auto;
+}
+
 .nav-icon svg {
   width: 16px;
   height: 16px;
@@ -339,6 +365,7 @@ body {
 .main-content {
   flex: 1;
   padding-top: var(--topbar-h);
+  margin-left: 60px;
   display: flex;
   flex-direction: column;
   min-height: 100vh;
@@ -1393,42 +1420,20 @@ textarea {
   }
 }
 
-/* ── RESPONSIVE ───────────────────────────────── */
+/* ── RESPONSIVE ───────────────────────────── */
 @media (max-width: 768px) {
 
-  /* Item 1: no mobile, sidebar nunca é collapsed — só open/closed */
   .sidebar {
+    width: var(--sidebar-w);
     transform: translateX(-100%);
   }
-
-  .sidebar.open {
+  
+  .sidebar.expanded {
     transform: translateX(0);
     box-shadow: var(--shadow-lg);
   }
 
-  /* collapsed no mobile não deve aplicar largura reduzida */
-  .sidebar.collapsed {
-    width: var(--sidebar-w) !important;
-  }
 
-  .sidebar.collapsed .brand-text,
-  .sidebar.collapsed .menu-text {
-    display: flex !important;
-  }
-
-  .sidebar.collapsed .nav-item {
-    justify-content: flex-start !important;
-    padding: 9px 12px !important;
-    gap: 10px !important;
-  }
-
-  .sidebar.collapsed .sidebar-footer span,
-  .sidebar.collapsed .btn-export,
-  .sidebar.collapsed .btn-import,
-  .sidebar.collapsed #userEmail,
-  .sidebar.collapsed #btnLogout {
-    display: flex !important;
-  }
 
   .main-content {
     margin-left: 0 !important;

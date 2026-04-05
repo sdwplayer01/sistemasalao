@@ -81,10 +81,10 @@ export function navigateTo(page) {
     _paginaAtual = page
     localStorage.setItem('salao_last_page', page)
 
-    // Sempre fecha a sidebar ao navegar (pois agora é overlay)
+    // Sempre fecha a sidebar ao navegar
     const sb = document.getElementById('sidebar');
     const bg = document.getElementById('sidebarBackdrop');
-    if (sb) sb.classList.remove('open');
+    if (sb) sb.classList.remove('expanded');
     if (bg) bg.classList.remove('active');
   }
 
@@ -134,7 +134,7 @@ function initApp(user) {
   const btnMenuMobile = document.getElementById('btnMenuMobile')
 
   const toggleSidebar = () => {
-    if (sidebar) sidebar.classList.toggle('open')
+    if (sidebar) sidebar.classList.toggle('expanded')
     if (backdrop) backdrop.classList.toggle('active')
   }
 
