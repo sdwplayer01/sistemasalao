@@ -48,10 +48,11 @@ function loadTheme() {
 loadTheme()
 
 // ── Navegação ──────────────────────────────────────────
-export function navigateTo(page) {
+export async function navigateTo(page) {
   if (!PAGES[page]) { page = 'dashboard' }
 
-  const performNav = () => {
+  const performNav = async () => {
+    // 1. Remove estados ativos antigos
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'))
     document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'))
 
@@ -60,6 +61,7 @@ export function navigateTo(page) {
 
     if (pageEl) {
       pageEl.classList.add('active')
+      
       // Loader minimalista
       pageEl.innerHTML = `
         <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:100px;gap:15px;color:var(--plum-medium);opacity:0.6">
@@ -67,10 +69,11 @@ export function navigateTo(page) {
           <span style="font-size:13px;letter-spacing:1px">CARREGANDO</span>
         </div>`
 
-      // Renderiza o conteúdo da página
-      PAGES[page].render(pageEl)
+      // 2. Renderiza o conteúdo (Aguardando se a renderização for async)
+      // Passamos o container para a função de render da página
+      await PAGES[page].render(pageEl)
 
-      // Inicializa utilitários na nova página
+      // 3. Inicializa utilitários na nova página
       initIcons()
       applyMoneyMask(pageEl)
       applyPhoneMask(pageEl)
@@ -81,17 +84,27 @@ export function navigateTo(page) {
     _paginaAtual = page
     localStorage.setItem('salao_last_page', page)
 
-    // Sempre fecha a sidebar ao navegar
+    // 4. Sempre fecha a sidebar ao navegar
     const sb = document.getElementById('sidebar');
     const bg = document.getElementById('sidebarBackdrop');
     if (sb) sb.classList.remove('expanded');
     if (bg) bg.classList.remove('active');
   }
 
+  // Execução com tratamento de erro da View Transition API
   if (document.startViewTransition) {
-    document.startViewTransition(() => performNav())
+    const transition = document.startViewTransition(() => performNav());
+    
+    // Evita o erro 'AbortError: Transition was skipped' no console
+    try {
+      await transition.finished;
+    } catch (e) {
+      // Silencia o erro se o usuário clicar rápido demais ou a transição for cancelada
+      console.debug("View Transition cancelada (navegação rápida)");
+    }
   } else {
-    performNav()
+    // Fallback para navegadores que não suportam a API
+    performNav();
   }
 }
 
