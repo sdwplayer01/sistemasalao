@@ -278,11 +278,6 @@ body {
   line-height: 1.2;
 }
 
-#topBarTitle {
-  flex-grow: 1;
-  flex-shrink: 1;
-}
-
 .sidebar-nav {
   flex: 1;
   padding: 10px 8px;
@@ -383,8 +378,8 @@ body {
   border-bottom: 1px solid var(--border);
   display: flex;
   align-items: center;
-  padding: 0 24px;
-  gap: 16px;
+  padding: 0 24px 0 0;
+  gap: 0;
   position: fixed;
   top: 0;
   left: var(--sidebar-w);
@@ -394,6 +389,14 @@ body {
   transition: left .25s ease;
 }
 
+#btnMenuMobile {
+  margin-left: 16px;
+  margin-right: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 .btn-menu-mobile {
   color: var(--plum) !important;
 }
@@ -401,6 +404,21 @@ body {
 .btn-menu-mobile svg {
   width: 22px;
   height: 22px;
+}
+
+#topBarTitle {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  flex-grow: 1;
+  flex-shrink: 1;
+}
+
+#topBarNomeSalao,
+.brand-tagline {
+  margin: 0;
+  padding: 0;
+  line-height: 1.2;
 }
 
 /* .top-bar-title foi substituído por #topBarTitle */
